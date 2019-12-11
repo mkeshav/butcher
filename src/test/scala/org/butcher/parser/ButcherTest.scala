@@ -2,46 +2,42 @@ package org.butcher.parser
 
 import org.scalatest.{Matchers, PropSpec}
 import Butcher._
-import fastparse.Parsed
 import org.scalatest.prop.PropertyChecks
 
 import scala.util.Random
 
 class ButcherTest extends PropSpec with PropertyChecks with Matchers {
-  property("token parsing - success") {
-    val rand = Random.alphanumeric.take(16).mkString
+  property("indices parse - success") {
+    val l = (1 to Random.nextInt(10)).map(i => Random.nextInt(i*1000))
     val tokens =
       Table(
         ("input", "result"),
-        (rand, Parsed.Success(rand, 16)),
+        (s"column indices in [${l.mkString(",")}] then hash", ColumnIndicesActionExpr(l, Hash)),
       )
 
-    forAll(tokens) { (i: String, expected: Parsed.Success[String]) =>
-      fastparse.parse(i, tokenParser(_)) should be(expected)
+    forAll(tokens) { (i: String, expected: Expr) =>
+      val r = fastparse.parse(i, columnIndicesLineParser(_))
+      r.fold(
+        onFailure = {(_, _, _) => false should be(true)},
+        onSuccess = {case (expr, _) => expr should be(expected)}
+      )
     }
   }
 
   property("names parse - success") {
+    val l = (1 to Random.nextInt(10)).map(i => Random.alphanumeric.take(16).mkString)
     val tokens =
       Table(
-        ("input", "result", "length"),
-        ("column names in [first_name] then hash", ColumnNamesActionExpr(Seq("first_name"), Hash), 38),
+        ("input", "result"),
+        (s"column names in [${l.mkString(",")}] then hash", ColumnNamesActionExpr(l, Hash)),
       )
 
-    forAll(tokens) { (i: String, expected: Expr, length: Int) =>
-      fastparse.parse(i, namesParser(_)) should be(Parsed.Success(expected, length))
-    }
-  }
-
-  property("indices parse - success") {
-    val tokens =
-      Table(
-        ("input", "result", "length"),
-        ("column indices in [1] then hash", ColumnIndicesActionExpr(Seq(1), Hash), 31),
+    forAll(tokens) { (i: String, expected: Expr) =>
+      val r = fastparse.parse(i, columnNamesLineParser(_))
+      r.fold(
+        onFailure = {(_, _, _) => false should be(true)},
+        onSuccess = {case (expr, _) => expr should be(expected)}
       )
-
-    forAll(tokens) { (i: String, expected: Expr, length: Int) =>
-      fastparse.parse(i, indicesParser(_)) should be(Parsed.Success(expected, length))
     }
   }
 }

@@ -18,12 +18,14 @@ final case class ColumnNamesActionExpr(override val columns: Seq[String], action
 final case class ColumnIndicesActionExpr(override val columns: Seq[Int], action: Action) extends Expr with ColumnIndexExpr
 
 object Butcher {
-  def numberParser[_: P]: P[Int] = P( CharIn("0-9").rep(1).!.map(_.mkString.toInt) )
-  def tokenParser[_: P]: P[String] = P( CharIn("A-Za-z0-9_\\-").rep(1).!.map(_.mkString) )
-  def namesParser[_: P]: P[Expr]  = P(IgnoreCase("column names in [") ~ tokenParser.rep(1, sep = ",") ~ IgnoreCase("] then ") ~ tokenParser ~ End).map {
+  private def numberParser[_: P]: P[Int] = P( CharIn("0-9").rep(1).!.map(_.toInt) )
+  private def indicesParser[_: P]: P[Seq[Int]] = P(numberParser.!.map(_.toInt).rep(1, sep=","))
+  private def tokenParser[_: P]: P[String] = P( CharIn("A-Za-z0-9_\\-").rep(1).!.map(_.mkString) )
+  private def tokensParser[_: P]: P[Seq[String]] = P(tokenParser.!.rep(min = 1, sep = ","))
+  def columnNamesLineParser[_: P]: P[Expr]  = P(IgnoreCase("column names in [") ~ tokensParser ~ IgnoreCase("] then ") ~ tokenParser ~ End).map {
     case (columns, _) => ColumnNamesActionExpr(columns, Hash)
   }
-  def indicesParser[_: P]: P[Expr]  = P(IgnoreCase("column indices in [") ~ numberParser.rep(1, sep = ",") ~ IgnoreCase("] then ") ~ tokenParser ~ End).map {
+  def columnIndicesLineParser[_: P]: P[Expr]  = P(IgnoreCase("column indices in [") ~ indicesParser ~ IgnoreCase("] then ") ~ tokenParser ~ End).map {
     case (columns, _) => ColumnIndicesActionExpr(columns, Hash)
   }
 }
