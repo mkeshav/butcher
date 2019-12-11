@@ -1,0 +1,6 @@
+*.class
+*.swp
+robot.jar
+target
+.idea
+.bloop
