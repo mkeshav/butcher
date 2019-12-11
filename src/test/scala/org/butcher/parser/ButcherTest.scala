@@ -21,16 +21,27 @@ class ButcherTest extends PropSpec with PropertyChecks with Matchers {
     }
   }
 
-  property("parse - success") {
-    val rand = Random.alphanumeric.take(16).mkString
+  property("names parse - success") {
     val tokens =
       Table(
-        ("input", "result"),
-        ("column_name in [first_name] then hash", ActionExpr(Seq("first_name"), Hash)),
+        ("input", "result", "length"),
+        ("column names in [first_name] then hash", ColumnNamesActionExpr(Seq("first_name"), Hash), 38),
       )
 
-    forAll(tokens) { (i: String, expected: ActionExpr) =>
-      fastparse.parse(i, inParser(_)) should be(Parsed.Success(expected, 37))
+    forAll(tokens) { (i: String, expected: Expr, length: Int) =>
+      fastparse.parse(i, namesParser(_)) should be(Parsed.Success(expected, length))
+    }
+  }
+
+  property("indices parse - success") {
+    val tokens =
+      Table(
+        ("input", "result", "length"),
+        ("column indices in [1] then hash", ColumnIndicesActionExpr(Seq(1), Hash), 31),
+      )
+
+    forAll(tokens) { (i: String, expected: Expr, length: Int) =>
+      fastparse.parse(i, indicesParser(_)) should be(Parsed.Success(expected, length))
     }
   }
 }
