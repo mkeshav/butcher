@@ -12,7 +12,7 @@ class ButcherTest extends PropSpec with PropertyChecks with Matchers {
     val data =
       Table(
         ("input", "result"),
-        (s"column indices in [${l.mkString(",")}] then hash", ColumnIndicesMaskExpr(l)),
+        (s"column indices in [${l.mkString(",")}] then mask", ColumnIndicesMaskExpr(l)),
       )
 
     forAll(data) { (i: String, expected: Expr) =>
@@ -29,7 +29,7 @@ class ButcherTest extends PropSpec with PropertyChecks with Matchers {
     val data =
       Table(
         ("input", "result"),
-        (s"column names in [${l.mkString(",")}] then hash", ColumnNamesMaskExpr(l)),
+        (s"column names in [${l.mkString(",")}] then mask", ColumnNamesMaskExpr(l)),
       )
 
     forAll(data) { (i: String, expected: Expr) =>
@@ -47,13 +47,13 @@ class ButcherTest extends PropSpec with PropertyChecks with Matchers {
 
     val ml =
       s"""
-         |column names in [${lc2.mkString(",")}] then encrypt using foo:bar
-         |column names in [${lc1.mkString(",")}] then hash
+         |column names in [${lc2.mkString(",")}] then encrypt using kms key foo
+         |column names in [${lc1.mkString(",")}] then mask
          |""".stripMargin
     val data =
       Table(
         ("input", "result"),
-        (ml, Seq(ColumnNamesEncryptExpr(lc2, "foo", "bar"), ColumnNamesMaskExpr(lc1))),
+        (ml, Seq(ColumnNamesEncryptExpr(lc2, "foo"), ColumnNamesMaskExpr(lc1))),
       )
 
     forAll(data) { (i: String, expected: Seq[Expr]) =>

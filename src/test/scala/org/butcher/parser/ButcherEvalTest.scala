@@ -21,8 +21,8 @@ class ButcherEvalTest extends FunSuite with Matchers {
   test("eval") {
     val ml =
       s"""
-         |column names in [driversLicence] then encrypt using foo:bar
-         |column names in [firstName] then hash
+         |column names in [driversLicence] then encrypt using kms key foo
+         |column names in [firstName] then mask
          |""".stripMargin
 
     val expressions = fastparse.parse(ml.trim, nameSpecParser(_))
