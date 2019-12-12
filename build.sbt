@@ -22,6 +22,7 @@ assemblyMergeStrategy in assembly := {
 
 libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fastparse" % "2.1.3",
+  "org.typelevel" %% "cats-core" % "2.0.0",
   "com.outr" %% "hasher" % "1.2.1",
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test
