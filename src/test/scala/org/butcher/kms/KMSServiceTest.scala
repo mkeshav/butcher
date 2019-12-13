@@ -31,7 +31,7 @@ class KMSServiceTest extends FunSuite with MockFactory with Matchers {
     f.fold({t => println(t); false should be(true)}, {
       v =>
         v should be("key:AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA==,data:5gVr+Ca1Tqs9BirpPopOmw==")
-        println(decrypt(v).run(kms))
+        decrypt(v).run(kms) should be(Right("foo"))
     })
   }
 
