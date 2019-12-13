@@ -7,6 +7,13 @@ import com.roundeights.hasher.Implicits._
 import cats.syntax.either._
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 
+trait ColumnReadable[T] {
+  def get(column: String): Either[Throwable, T]
+  def get(index: Int): Either[Throwable, T]
+}
+
+case class Butchered(column: String, value: String)
+
 class ButcherEval(dsl: TaglessCrypto[IO]) {
   def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, Butchered]] = {
     ops.foldLeft(List.empty[Either[Throwable, Butchered]]) {

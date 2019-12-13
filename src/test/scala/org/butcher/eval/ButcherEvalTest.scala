@@ -6,7 +6,7 @@ import com.amazonaws.util.Base64
 import org.butcher.kms.{CryptoDsl, DataKey}
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.parser.ButcherParser.nameSpecParser
-import org.butcher.parser.{Butchered, ColumnReadable}
+import org.butcher.parser.{UnknownExpr}
 import org.scalatest.{FunSuite, Matchers}
 
 case class Person(firstName: String, driversLicence: String) extends ColumnReadable[String] {
@@ -55,5 +55,11 @@ class ButcherEvalTest extends FunSuite with Matchers {
           })
       }
     )
+  }
+
+  test("unknown expression") {
+    val es = Seq(UnknownExpr())
+    val p = Person("Satan", "666")
+    evaluator.eval(es, p).sequence.isLeft should be(true)
   }
 }
