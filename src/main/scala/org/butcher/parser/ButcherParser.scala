@@ -16,8 +16,8 @@ sealed trait ColumnIndexExpr extends Expr {
 final case class ColumnNamesMaskExpr(override val columns: Seq[String]) extends Expr with ColumnNameExpr
 final case class ColumnIndicesMaskExpr(override val columns: Seq[Int]) extends Expr with ColumnIndexExpr
 
-final case class ColumnNamesEncryptExpr(override val columns: Seq[String], kmsKey: String) extends Expr with ColumnNameExpr
-final case class ColumnIndicesEncryptExpr(override val columns: Seq[Int], kmsKey: String) extends Expr with ColumnIndexExpr
+final case class ColumnNamesEncryptExpr(override val columns: Seq[String], keyId: String) extends Expr with ColumnNameExpr
+final case class ColumnIndicesEncryptExpr(override val columns: Seq[Int], keyId: String) extends Expr with ColumnIndexExpr
 
 trait ColumnReadable[T] {
   def get(column: String): Either[Throwable, T]

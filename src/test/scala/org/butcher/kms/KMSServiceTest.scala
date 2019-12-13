@@ -7,7 +7,7 @@ import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyRequest, 
 import com.amazonaws.util.Base64
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Matchers}
-import KMSService.encrypt
+import KMSService._
 
 class KMSServiceTest extends FunSuite with MockFactory with Matchers {
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
@@ -20,15 +20,24 @@ class KMSServiceTest extends FunSuite with MockFactory with Matchers {
       .withCiphertextBlob(ByteBuffer.wrap(Base64.decode(b64EncodedCipherTextBlob)))
     (kms.generateDataKey _).when(*).returns(generateDataKeyResult)
 
-    val decryptResult = new DecryptResult().withPlaintext(ByteBuffer.wrap(Base64.decode(b64EncodedPlainTextKey)))
-    (kms.decrypt _).when(*).returns(decryptResult)
+    val f = for {
+      dk <- generateDataKey("foo").run(kms)
+      ed <- encryptWith("foo", dk).run(kms)
+    } yield ed
 
-    encrypt("foo", "bar").run(kms).isRight should be(true)
+    f.fold({t => println(t); false should be(true)}, {
+      v =>
+        v should be("key:AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA==,data:5gVr+Ca1Tqs9BirpPopOmw==")
+    })
   }
 
   test("encrypt exception") {
     val kms = stub[AWSKMS]
     (kms.generateDataKey _).when(_:GenerateDataKeyRequest).throwing(new Throwable("Say permission error"))
-    encrypt("foo", "bar").run(kms).isLeft should be(true)
+    val f = for {
+      dk <- generateDataKey("foo").run(kms)
+      ed <- encryptWith("foo", dk).run(kms)
+    } yield ed
+    f.isLeft should be(true)
   }
 }

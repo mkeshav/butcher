@@ -9,16 +9,23 @@ import javax.crypto.spec.SecretKeySpec
 import cats.syntax.either._
 
 object KMSService {
-  def encrypt(data: String, kmsKey: String): Reader[AWSKMS, Either[Throwable, String]] = Reader((kms: AWSKMS) => {
-    val gd = new GenerateDataKeyRequest().withKeyId(kmsKey).withKeySpec(DataKeySpec.AES_256)
+  def encryptWith(data: String, dk: DataKey): Reader[AWSKMS, Either[Throwable, String]] = Reader((kms: AWSKMS) => {
+    try {
+      encryptData(new SecretKeySpec(dk.plainText, "AES"), data) map {
+        ed => s"key:${dk.cipher},data:$ed"
+      }
+    } catch {
+      case e: Throwable => e.asLeft
+    }
+  })
+
+  def generateDataKey(keyId: String): Reader[AWSKMS, Either[Throwable, DataKey]] = Reader((kms: AWSKMS) => {
+    val gd = new GenerateDataKeyRequest().withKeyId(keyId).withKeySpec(DataKeySpec.AES_256)
     try {
       val gdkr = kms.generateDataKey(gd)
-      encryptData(new SecretKeySpec(gdkr.getPlaintext.array(), "AES"), data) map {
-        ed =>
-          val dataKey = new String(gdkr.getCiphertextBlob.array())
-          val result = s"key:$dataKey,data:$ed"
-          new String(Base64.encode(result.getBytes))
-      }
+      val ptk = gdkr.getPlaintext.array()
+      val cipherBlob = new String(Base64.encode(gdkr.getCiphertextBlob.array()))
+      DataKey(ptk, cipherBlob).asRight
     } catch {
       case e: Throwable => e.asLeft
     }

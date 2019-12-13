@@ -1,5 +1,6 @@
 package org.butcher.eval
 
+import cats.data.EitherT
 import cats.effect.IO
 import org.butcher.parser._
 import com.roundeights.hasher.Implicits._
@@ -15,12 +16,17 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
             row.get(c).map(v => Butchered(c, v.sha256.hex))
         }
         acc ++ masked
-      case (acc, ColumnNamesEncryptExpr(columns, kmsKey)) =>
+      case (acc, ColumnNamesEncryptExpr(columns, keyId)) =>
         val encrypted = columns.map {
           c =>
             row.get(c).flatMap {
               v =>
-                dsl.encrypt(v, kmsKey).unsafeRunSync().map(e => Butchered(c, e))
+                val io = for {
+                  dk <- EitherT(dsl.generateKey(keyId))
+                  ed <- EitherT(dsl.encrypt(v, dk))
+                } yield ed
+
+                io.value.unsafeRunSync().map(enc => Butchered(c, enc))
             }
         }
         acc ++ encrypted

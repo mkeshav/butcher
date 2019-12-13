@@ -8,7 +8,7 @@ import scala.util.Random
 
 class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
   property("indices parse - success") {
-    val l = (1 to Random.nextInt(10)).map(i => Random.nextInt(i*1000))
+    val l = (1 to 10).map(i => Random.nextInt(i*1000))
     val data =
       Table(
         ("input", "result"),
@@ -25,7 +25,7 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
   }
 
   property("names parse - success") {
-    val l = (1 to Random.nextInt(10)).map(i => Random.alphanumeric.take(16).mkString)
+    val l = (1 to 10).map(i => Random.alphanumeric.take(16).mkString)
     val data =
       Table(
         ("input", "result"),
@@ -42,8 +42,8 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
   }
 
   property("multiline") {
-    val lc1 = (1 to Random.nextInt(10)).map(i => Random.alphanumeric.take(16).mkString)
-    val lc2 = (1 to Random.nextInt(10)).map(i => Random.alphanumeric.take(16).mkString)
+    val lc1 = (1 to 10).map(_ => Random.alphanumeric.take(16).mkString)
+    val lc2 = (1 to 10).map(_ => Random.alphanumeric.take(16).mkString)
 
     val ml =
       s"""
