@@ -1,6 +1,7 @@
 assemblyJarName in assembly := "butcher.jar"
 
 name := "butcher"
+organization := "org.butcher"
 
 target in assembly := baseDirectory.value
 scalaVersion := "2.12.10"

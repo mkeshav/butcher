@@ -5,12 +5,8 @@ import cats.effect.IO
 import org.butcher.parser._
 import com.roundeights.hasher.Implicits._
 import cats.syntax.either._
+import org.butcher.ColumnReadable
 import org.butcher.kms.CryptoDsl.TaglessCrypto
-
-trait ColumnReadable[T] {
-  def get(column: String): Either[Throwable, T]
-  def get(index: Int): Either[Throwable, T]
-}
 
 case class Butchered(column: String, value: String)
 

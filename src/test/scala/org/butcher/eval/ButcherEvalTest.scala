@@ -3,23 +3,14 @@ package org.butcher.eval
 import cats.effect.IO
 import cats.implicits._
 import com.amazonaws.util.Base64
+import org.butcher.ColumnReadable
 import org.butcher.kms.{CryptoDsl, DataKey}
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.parser.ButcherParser.nameSpecParser
-import org.butcher.parser.{UnknownExpr}
+import org.butcher.parser.UnknownExpr
 import org.scalatest.{FunSuite, Matchers}
+import org.butcher.Implicits._
 
-case class Person(firstName: String, driversLicence: String) extends ColumnReadable[String] {
-  override def get(column: String): Either[Throwable, String] = {
-    column match {
-      case "firstName" => Right(firstName)
-      case "driversLicence" => Right(driversLicence)
-      case _ => Left(new Throwable("Unknown Column"))
-    }
-  }
-
-  override def get(index: Int): Either[Throwable, String] = Left(new Throwable("Not implemented"))
-}
 class ButcherEvalTest extends FunSuite with Matchers {
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
   val b64EncodedCipherTextBlob = "AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA=="
@@ -42,7 +33,7 @@ class ButcherEvalTest extends FunSuite with Matchers {
          |""".stripMargin
 
     val expressions = fastparse.parse(ml.trim, nameSpecParser(_))
-    val p = Person("Satan", "666")
+    val p = Map("firstName" -> "Satan", "driversLicence" -> "666")
     expressions.fold(
       onFailure = {(_, _, extra) => println(extra.trace().longMsg);false should be(true)},
       onSuccess = {
@@ -59,7 +50,7 @@ class ButcherEvalTest extends FunSuite with Matchers {
 
   test("unknown expression") {
     val es = Seq(UnknownExpr())
-    val p = Person("Satan", "666")
+    val p = Map("firstName" -> "satan", "driversLicence" -> "666")
     evaluator.eval(es, p).sequence.isLeft should be(true)
   }
 }
