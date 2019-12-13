@@ -20,6 +20,9 @@ class KMSServiceTest extends FunSuite with MockFactory with Matchers {
       .withCiphertextBlob(ByteBuffer.wrap(Base64.decode(b64EncodedCipherTextBlob)))
     (kms.generateDataKey _).when(*).returns(generateDataKeyResult)
 
+    val decryptResult = new DecryptResult().withPlaintext(ByteBuffer.wrap(Base64.decode(b64EncodedPlainTextKey)))
+    (kms.decrypt _).when(*).returns(decryptResult)
+
     val f = for {
       dk <- generateDataKey("foo").run(kms)
       ed <- encryptWith("foo", dk).run(kms)
@@ -28,6 +31,7 @@ class KMSServiceTest extends FunSuite with MockFactory with Matchers {
     f.fold({t => println(t); false should be(true)}, {
       v =>
         v should be("key:AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA==,data:5gVr+Ca1Tqs9BirpPopOmw==")
+        println(decrypt(v).run(kms))
     })
   }
 
