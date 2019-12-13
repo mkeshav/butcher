@@ -29,13 +29,13 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
     val data =
       Table(
         ("input", "result"),
-        (s"column names in [${l.mkString(",")}] then mask", ColumnNamesMaskExpr(l)),
+        (s"column names in [ ${l.mkString(", ")} ] then mask", ColumnNamesMaskExpr(l)),
       )
 
     forAll(data) { (i: String, expected: Expr) =>
       val r = fastparse.parse(i, columnNamesLineMaskParser(_))
       r.fold(
-        onFailure = {(_, _, _) => false should be(true)},
+        onFailure = {(_, _, extra) => println(extra.trace().longMsg);false should be(true)},
         onSuccess = {case (expr, _) => expr should be(expected)}
       )
     }
@@ -47,8 +47,8 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
 
     val ml =
       s"""
-         |column names in [${lc2.mkString(",")}] then encrypt using kms key foo
-         |column names in [${lc1.mkString(",")}] then mask
+         |column names in [ ${lc2.mkString(",")}] then encrypt using kms key foo
+         |column names in [${lc1.mkString(",")} ] then mask
          |""".stripMargin
     val data =
       Table(

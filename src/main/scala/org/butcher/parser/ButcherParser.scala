@@ -1,7 +1,6 @@
 package org.butcher.parser
 
-import com.amazonaws.services.kms.AWSKMSClientBuilder
-import fastparse.NoWhitespace._
+import fastparse.SingleLineWhitespace._
 import fastparse._
 sealed trait Expr
 
