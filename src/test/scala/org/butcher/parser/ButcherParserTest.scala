@@ -1,12 +1,12 @@
 package org.butcher.parser
 
 import org.scalatest.{Matchers, PropSpec}
-import Butcher._
+import ButcherParser._
 import org.scalatest.prop.PropertyChecks
 
 import scala.util.Random
 
-class ButcherTest extends PropSpec with PropertyChecks with Matchers {
+class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
   property("indices parse - success") {
     val l = (1 to Random.nextInt(10)).map(i => Random.nextInt(i*1000))
     val data =

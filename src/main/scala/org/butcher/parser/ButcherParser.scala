@@ -1,15 +1,8 @@
 package org.butcher.parser
 
-import java.util.Base64
-
+import com.amazonaws.services.kms.AWSKMSClientBuilder
+import fastparse.NoWhitespace._
 import fastparse._
-import NoWhitespace._
-import com.roundeights.hasher.Implicits._
-import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
-import cats.syntax.either._
-import com.amazonaws.services.kms.{AWSKMS, AWSKMSClientBuilder}
-import org.butcher.kms.KMSService.encrypt
 sealed trait Expr
 
 sealed trait ColumnNameExpr extends Expr {
@@ -33,8 +26,7 @@ trait ColumnReadable[T] {
 
 case class Butchered(column: String, value: String)
 
-object Butcher {
-  lazy val kmsClient = AWSKMSClientBuilder.standard().withRegion("ap-southeast-2").build()
+object ButcherParser {
   def Newline[_: P] = P( NoTrace(StringIn("\r\n", "\n")) )
   private def numberParser[_: P]: P[Int] = P( CharIn("0-9").rep(1).!.map(_.toInt) )
   private def indicesParser[_: P]: P[Seq[Int]] = P(numberParser.!.map(_.toInt).rep(1, sep=","))
@@ -56,26 +48,4 @@ object Butcher {
 
   def lineParser[_: P] = P(columnNamesLineMaskParser | columnNamesLineEncryptParser)
   def nameSpecParser[_: P] = P(lineParser.rep)
-
-
-  def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, Butchered]] = {
-    ops.foldLeft(List.empty[Either[Throwable, Butchered]]) {
-      case (acc, ColumnNamesMaskExpr(columns)) =>
-        val masked = columns.map {
-          c =>
-            row.get(c).map(v => Butchered(c, v.sha256.hex))
-        }
-        acc ++ masked
-      case (acc, ColumnNamesEncryptExpr(columns, kmsKey)) =>
-        val encrypted = columns.map {
-          c =>
-            row.get(c).flatMap {
-              v =>
-                encrypt(v, kmsKey).run(kmsClient).map(r => Butchered(c, r))
-            }
-        }
-        acc ++ encrypted
-      case (acc, _) => acc ++ List(new Throwable("Unknown expression").asLeft)
-    }
-  }
 }

@@ -23,6 +23,7 @@ assemblyMergeStrategy in assembly := {
 libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fastparse" % "2.1.3",
   "org.typelevel" %% "cats-core" % "2.0.0",
+  "org.typelevel" %% "cats-effect" % "2.0.0",
   "com.outr" %% "hasher" % "1.2.1",
   //java
   "com.amazonaws" % "aws-java-sdk-kms" % "1.11.691",
