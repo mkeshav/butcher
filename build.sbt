@@ -30,5 +30,6 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-kms" % "1.11.691",
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test
 )
