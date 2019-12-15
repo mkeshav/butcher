@@ -33,7 +33,7 @@ object KMSService {
     }
   })
 
-  def decrypt(value: String): Reader[AWSKMS, Either[Throwable, String]] = Reader((kms: AWSKMS) => {
+  def parseAndDecrypt(value: String): Reader[AWSKMS, Either[Throwable, String]] = Reader((kms: AWSKMS) => {
     try {
       val parts = value.split(",")
       val key = parts(0).split(":")(1)

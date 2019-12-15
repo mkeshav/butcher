@@ -10,6 +10,7 @@ final case class DataKey(plainText: Array[Byte], cipher:String)
 trait CryptoDsl[F[_]] {
   def generateKey(keyId: String): F[Either[Throwable, DataKey]]
   def encrypt(data: String, dk: DataKey): F[Either[Throwable, String]]
+  def decrypt(value: String): F[Either[Throwable, String]]
 }
 
 object CryptoDsl {
@@ -17,10 +18,13 @@ object CryptoDsl {
     override def generateKey(keyId: String): IO[Either[Throwable, DataKey]] = IO(generateDataKey(keyId).run(kms))
 
     override def encrypt(data: String, dk: DataKey): IO[Either[Throwable, String]] = IO(encryptWith(data, dk).run(kms))
+
+    override def decrypt(value: String): IO[Either[Throwable, String]] = IO(parseAndDecrypt(value).run(kms))
   }
 
   class TaglessCrypto[F[_]: Monad](dsl: CryptoDsl[F]) {
     def encrypt(data: String, dk: DataKey): F[Either[Throwable, String]] = dsl.encrypt(data, dk)
     def generateKey(keyId: String): F[Either[Throwable, DataKey]] = dsl.generateKey(keyId)
+    def decrypt(value: String): F[Either[Throwable, String]] = dsl.decrypt(value)
   }
 }

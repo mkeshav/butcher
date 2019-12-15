@@ -24,6 +24,8 @@ class ButcherEvalTest extends FunSuite with Matchers {
     override def generateKey(keyId: String): IO[Either[Throwable, DataKey]] = IO.pure(dk.asRight)
 
     override def encrypt(data: String, dk: DataKey): IO[Either[Throwable, String]] = IO.pure("foo".asRight)
+
+    override def decrypt(value: String): IO[Either[Throwable, String]] = IO.pure("foo".asRight)
   })
 
   val evaluator = new ButcherEval(crypto)
