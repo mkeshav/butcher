@@ -1,9 +1,6 @@
-assemblyJarName in assembly := "butcher.jar"
-
 name := "butcher"
 organization := "org.butcher"
 
-target in assembly := baseDirectory.value
 scalaVersion := "2.12.10"
 
 scalacOptions ++= Seq(
@@ -15,11 +12,6 @@ scalacOptions += "-Ypartial-unification"
 
 // to write types like Reader[String, ?]
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
-
-assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-  case x => MergeStrategy.first
-}
 
 ThisBuild / githubOwner := "mkeshav"
 ThisBuild / githubRepository := "butcher"
