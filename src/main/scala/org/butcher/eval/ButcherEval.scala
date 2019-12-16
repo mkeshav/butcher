@@ -13,13 +13,13 @@ case class Butchered(column: String, value: String)
 
 class ButcherEval(dsl: TaglessCrypto[IO]) {
 
-  def evalWithHeader(spec: String, row: ColumnReadable[String]): Either[Throwable, List[Butchered]] = {
+  def evalWithHeader(spec: String, row: ColumnReadable[String]): List[Either[Throwable, Butchered]] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
     expressions.fold(
-      onFailure = {(_, _, extra) => Left(new Throwable(extra.trace().longMsg))},
+      onFailure = {(_, _, extra) => List(Left(new Throwable(extra.trace().longMsg)))},
       onSuccess = {
         case (es, _) =>
-          eval(es, row).sequence
+          eval(es, row)
       }
     )
   }

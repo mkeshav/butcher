@@ -75,29 +75,22 @@ class ButcherEvalTest extends FunSuite with Matchers {
         |god,333
         |""".stripMargin
 
-    expressions.fold(
-      onFailure = {(_, _, extra) => println(extra.trace().longMsg);false should be(true)},
-      onSuccess = {
-        case (es, _) =>
-          val bootstrapSchema = CsvSchema.emptySchema().withHeader();
-          val mapper = new CsvMapper()
-          val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
-          //toMap is to make it a immutable map
-          val res = mi.readAll().asScala.map(_.asScala.toMap).map {
-            row =>
-              evaluator.eval(es, row)
-          }
-          res.flatten.toList.sequence.fold({t => println(t); false should be(true)}, {
-            r =>
-              r should be(
-                List(Butchered("driversLicence","foo"),
-                  Butchered("firstName","3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"),
-                  Butchered("driversLicence","foo"),
-                  Butchered("firstName","5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99"),
-                ))
-          })
-
-      }
-    )
+    val bootstrapSchema = CsvSchema.emptySchema().withHeader();
+    val mapper = new CsvMapper()
+    val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
+    //toMap is to make it a immutable map
+    val res = mi.readAll().asScala.map(_.asScala.toMap).map {
+      row =>
+        evaluator.evalWithHeader(spec, row)
+    }
+    res.flatten.toList.sequence.fold({t => println(t); false should be(true)}, {
+      r =>
+        r should be(
+          List(Butchered("driversLicence","foo"),
+            Butchered("firstName","3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"),
+            Butchered("driversLicence","foo"),
+            Butchered("firstName","5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99"),
+          ))
+    })
   }
 }
