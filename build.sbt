@@ -21,6 +21,11 @@ assemblyMergeStrategy in assembly := {
   case x => MergeStrategy.first
 }
 
+ThisBuild / githubOwner := "mkeshav"
+ThisBuild / githubRepository := "butcher"
+ThisBuild / githubTokenSource := Some(TokenSource.Environment("GITHUB_TOKEN"))
+ThisBuild / githubUser := "mkeshav@gmail.com"
+
 libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fastparse" % "2.1.3",
   "org.typelevel" %% "cats-core" % "2.0.0",
