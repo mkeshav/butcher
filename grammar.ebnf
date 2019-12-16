@@ -1,0 +1,11 @@
+number::=[0-9];
+index::=number+;
+indices::={index ,}+;
+alphanum::=[A-Za-z0-9_-];
+identifier::=alphanum+;
+identifiers::={identifier ,}+;
+names_mask_line::="column names in [" identifiers "] then mask";
+names_encrypt_line::="column names in [" identifiers "] then encrypt using kms key" identifier;
+indices_mask_line::="column indices in [" indices "] then mask";
+indices_encrypt_line::="column indices in [" indices "] then encrypt using kms key" identifier;
+
