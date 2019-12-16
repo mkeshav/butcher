@@ -4,13 +4,26 @@ import cats.data.EitherT
 import cats.effect.IO
 import org.butcher.parser._
 import com.roundeights.hasher.Implicits._
-import cats.syntax.either._
 import org.butcher.ColumnReadable
 import org.butcher.kms.CryptoDsl.TaglessCrypto
+import org.butcher.parser.ButcherParser.nameSpecParser
+import cats.implicits._
 
 case class Butchered(column: String, value: String)
 
 class ButcherEval(dsl: TaglessCrypto[IO]) {
+
+  def evalWithHeader(spec: String, row: ColumnReadable[String]): Either[Throwable, List[Butchered]] = {
+    val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
+    expressions.fold(
+      onFailure = {(_, _, extra) => Left(new Throwable(extra.trace().longMsg))},
+      onSuccess = {
+        case (es, _) =>
+          eval(es, row).sequence
+      }
+    )
+  }
+
   def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, Butchered]] = {
     ops.foldLeft(List.empty[Either[Throwable, Butchered]]) {
       case (acc, ColumnNamesMaskExpr(columns)) =>
@@ -33,7 +46,7 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
             }
         }
         acc ++ encrypted
-      case (acc, _) => acc ++ List(new Throwable("Unknown expression").asLeft)
+      case (acc, _) => acc ++ List(Left(new Throwable("Unknown expression")))
     }
   }
 }
