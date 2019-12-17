@@ -21,6 +21,9 @@ ADD ./project/PackagingTypeWorkaround.scala ./project/
 ADD ./project/plugins.sbt ./project/
 RUN sbt update
 
+FROM base as release
+ADD . /app
+
 # --- dev image
 FROM base as dev
 RUN apt-get install -y curl python3

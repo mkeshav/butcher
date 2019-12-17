@@ -1,14 +1,23 @@
-version: '3'
+version: '3.7'
 
 services:
   dev:
     build:
       context: .
+      target: dev
     volumes:
       - .:/app:cached
+    environment:
+      - SBT_OPTS=-Xms512M -Xmx2G -Xss2M -XX:MaxMetaspaceSize=1024M -XX:+CMSClassUnloadingEnabled
+    command: >
+      bash -c "./init_bloop.sh && bash"
+
+  release:
+    build:
+      context: .
+      target: release
+    volumes:
       - ~/.ssh:/root/.ssh
     environment:
       - SBT_OPTS=-Xms512M -Xmx2G -Xss2M -XX:MaxMetaspaceSize=1024M -XX:+CMSClassUnloadingEnabled
       - GITHUB_TOKEN
-    command: >
-      bash -c "./init_bloop.sh && bash"
