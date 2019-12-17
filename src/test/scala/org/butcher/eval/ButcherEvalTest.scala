@@ -3,14 +3,9 @@ package org.butcher.eval
 import cats.effect.IO
 import cats.implicits._
 import com.amazonaws.util.Base64
-import com.fasterxml.jackson.databind.MappingIterator
-import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.kms.{CryptoDsl, DataKey}
 import org.scalatest.{FunSuite, Matchers}
-
-import scala.collection.JavaConverters._
-import scala.util.Random
 
 
 class ButcherEvalTest extends FunSuite with Matchers {
