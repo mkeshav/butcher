@@ -51,10 +51,13 @@ class ButcherEvalTest extends FunSuite with Matchers {
   test("csv") {
     evaluator.evalWithHeader(spec, data).fold({t => println(t); false should be(true)}, {
       r =>
-        r should be(List(
-          "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|foo|1",
-          "5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99|foo|2"
-        ))
+        val expected =
+          """
+            |firstName|driversLicence|donothing
+            |3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|foo|1
+            |5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99|foo|2
+            |""".stripMargin
+        r should be(expected.trim)
     })
   }
 }
