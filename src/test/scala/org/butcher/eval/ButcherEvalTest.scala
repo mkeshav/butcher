@@ -56,4 +56,18 @@ class ButcherEvalTest extends FunSuite with Matchers {
         r should be(expected.trim)
     })
   }
+
+  test("missing columns") {
+    val d =
+      """
+        |firstName,donothing
+        |satan,1
+        |god,2
+        |""".stripMargin
+
+    evaluator.evalWithHeader(spec, d).fold(
+      {t => t should be("0:Column driversLicence not found")},
+      {_ => false should be(true)
+    })
+  }
 }

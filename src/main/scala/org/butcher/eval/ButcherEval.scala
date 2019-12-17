@@ -26,13 +26,14 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
       onFailure = {(_, _, extra) => List(extra.trace().longMsg.asLeft)},
       onSuccess = {
         case (es, _) =>
-          val r: mutable.Seq[OpResult[String]] = mi.readAll().asScala.map(_.asScala.toMap).map {
-            row =>
+          val withRowIndex = mi.readAll().asScala.map(_.asScala.toMap).zipWithIndex
+          val r: mutable.Seq[OpResult[String]] = withRowIndex.map {
+            case (row, rowIdx) =>
               val masked = eval(es, row)
               masked.sequence.map {
                 m =>
                   (row ++ m.toMap).map({case (_, v) => v}).mkString("|")
-              }
+              }.leftMap(m => s"$rowIdx:$m")
           }
           r
       }
