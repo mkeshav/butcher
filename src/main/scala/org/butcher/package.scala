@@ -1,12 +1,13 @@
 package org
 
 package object butcher {
+  type OpResult[T] = Either[String, T]
   trait ColumnReadable[T] {
-    def get(column: String): Either[Throwable, T]
+    def get(column: String): OpResult[T]
   }
 
   class NamedLookup[T](m: Map[String, T]) extends ColumnReadable[T] {
-    override def get(column: String): Either[Throwable, T] = m.get(column).toRight(new Throwable(s"Column $column not found"))
+    override def get(column: String): OpResult[T] = m.get(column).toRight(s"Column $column not found")
   }
 
   object implicits {

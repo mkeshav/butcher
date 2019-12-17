@@ -3,6 +3,7 @@ package org.butcher.eval
 import cats.effect.IO
 import cats.implicits._
 import com.amazonaws.util.Base64
+import org.butcher.OpResult
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.kms.{CryptoDsl, DataKey}
 import org.scalatest.{FunSuite, Matchers}
@@ -29,11 +30,11 @@ class ButcherEvalTest extends FunSuite with Matchers {
 
 
   lazy val crypto = new TaglessCrypto[IO](new CryptoDsl[IO] {
-    override def generateKey(keyId: String): IO[Either[Throwable, DataKey]] = IO.pure(dk.asRight)
+    override def generateKey(keyId: String): IO[OpResult[DataKey]] = IO.pure(dk.asRight)
 
-    override def encrypt(data: String, dk: DataKey): IO[Either[Throwable, String]] = IO.pure("foo".asRight)
+    override def encrypt(data: String, dk: DataKey): IO[OpResult[String]] = IO.pure("foo".asRight)
 
-    override def decrypt(value: String): IO[Either[Throwable, String]] = IO.pure("foo".asRight)
+    override def decrypt(value: String): IO[OpResult[String]] = IO.pure("foo".asRight)
   })
 
   val evaluator = new ButcherEval(crypto)

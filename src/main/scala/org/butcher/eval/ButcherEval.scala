@@ -4,7 +4,7 @@ import cats.data.EitherT
 import cats.effect.IO
 import org.butcher.parser._
 import com.roundeights.hasher.Implicits._
-import org.butcher.ColumnReadable
+import org.butcher.{ColumnReadable, OpResult}
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.parser.ButcherParser.nameSpecParser
 import cats.implicits._
@@ -17,16 +17,16 @@ import org.butcher.implicits._
 import scala.collection.mutable
 
 class ButcherEval(dsl: TaglessCrypto[IO]) {
-  def evalWithHeader(spec: String, data: String): Either[Throwable, String] = {
+  def evalWithHeader(spec: String, data: String): OpResult[String] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
     val bootstrapSchema = CsvSchema.emptySchema().withHeader();
     val mapper = new CsvMapper()
     val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
     val res = expressions.fold(
-      onFailure = {(_, _, extra) => List(Left(new Throwable(extra.trace().longMsg)))},
+      onFailure = {(_, _, extra) => List(extra.trace().longMsg.asLeft)},
       onSuccess = {
         case (es, _) =>
-          val r: mutable.Seq[Either[Throwable, String]] = mi.readAll().asScala.map(_.asScala.toMap).map {
+          val r: mutable.Seq[OpResult[String]] = mi.readAll().asScala.map(_.asScala.toMap).map {
             row =>
               val masked = eval(es, row)
               masked.sequence.map {
@@ -42,8 +42,8 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
     res.toList.sequence.map(rows => (header :: rows).mkString(System.lineSeparator))
   }
 
-  private def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, (String, String)]] = {
-    ops.foldLeft(List.empty[Either[Throwable, (String, String)]]) {
+  private def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[OpResult[(String, String)]] = {
+    ops.foldLeft(List.empty[OpResult[(String, String)]]) {
       case (acc, ColumnNamesMaskExpr(columns)) =>
         val masked = columns.map {
           c =>
@@ -64,7 +64,7 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
             }
         }
         acc ++ encrypted
-      case (acc, _) => acc ++ List(Left(new Throwable("Unknown expression")))
+      case (acc, _) => acc ++ List("Unknown expression".asLeft)
     }
   }
 }
