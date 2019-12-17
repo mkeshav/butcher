@@ -3,9 +3,15 @@ package org.butcher.eval
 import cats.effect.IO
 import cats.implicits._
 import com.amazonaws.util.Base64
+import com.fasterxml.jackson.databind.MappingIterator
+import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.kms.{CryptoDsl, DataKey}
 import org.scalatest.{FunSuite, Matchers}
+
+import scala.collection.JavaConverters._
+import scala.util.Random
+
 
 class ButcherEvalTest extends FunSuite with Matchers {
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
@@ -21,9 +27,9 @@ class ButcherEvalTest extends FunSuite with Matchers {
 
   val data =
     """
-      |firstName,driversLicence
-      |satan,666
-      |god,333
+      |firstName,driversLicence,donothing
+      |satan,666,1
+      |god,333,2
       |""".stripMargin
 
 
@@ -45,12 +51,10 @@ class ButcherEvalTest extends FunSuite with Matchers {
   test("csv") {
     evaluator.evalWithHeader(spec, data).fold({t => println(t); false should be(true)}, {
       r =>
-        r should be(
-          List(("driversLicence","foo"),
-            ("firstName","3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"),
-            ("driversLicence","foo"),
-            ("firstName","5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99"),
-          ))
+        r should be(List(
+          "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|foo|1",
+          "5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99|foo|2"
+        ))
     })
   }
 }

@@ -10,28 +10,34 @@ import org.butcher.parser.ButcherParser.nameSpecParser
 import cats.implicits._
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+
 import scala.collection.JavaConverters._
 import org.butcher.implicits._
 
-class ButcherEval(dsl: TaglessCrypto[IO]) {
-  lazy val bootstrapSchema = CsvSchema.emptySchema().withHeader();
-  lazy val mapper = new CsvMapper()
+import scala.collection.mutable
 
-  def evalWithHeader(spec: String, data: String): Either[Throwable, List[(String, String)]] = {
+class ButcherEval(dsl: TaglessCrypto[IO]) {
+  def evalWithHeader(spec: String, data: String): Either[Throwable, List[String]] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
     val res = expressions.fold(
       onFailure = {(_, _, extra) => List(Left(new Throwable(extra.trace().longMsg)))},
       onSuccess = {
         case (es, _) =>
+          val bootstrapSchema = CsvSchema.emptySchema().withHeader();
+          val mapper = new CsvMapper()
           val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
-          val r = mi.readAll().asScala.map(_.asScala.toMap).map {
+          val r: mutable.Seq[Either[Throwable, String]] = mi.readAll().asScala.map(_.asScala.toMap).map {
             row =>
-              eval(es, row)
+              val masked = eval(es, row)
+              masked.sequence.map {
+                m =>
+                  (row ++ m.toMap).map({case (_, v) => v}).mkString("|")
+              }
           }
-          r.toList.flatten
+          r
       }
     )
-    res.sequence
+    res.toList.sequence
   }
 
   private def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, (String, String)]] = {
