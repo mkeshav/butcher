@@ -1,7 +1,5 @@
 package org
 
-import scala.collection.mutable
-
 package object butcher {
   trait ColumnReadable[T] {
     def get(column: String): Either[Throwable, T]
@@ -11,7 +9,7 @@ package object butcher {
     override def get(column: String): Either[Throwable, T] = m.get(column).toRight(new Throwable(s"Column $column not found"))
   }
 
-  object Implicits {
+  object implicits {
     implicit def makeMyMapColumnReadable(m: Map[String, String]): NamedLookup[String] = new NamedLookup(m)
   }
 }

@@ -8,28 +8,38 @@ import org.butcher.ColumnReadable
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.parser.ButcherParser.nameSpecParser
 import cats.implicits._
-
-case class Butchered(column: String, value: String)
+import com.fasterxml.jackson.databind.MappingIterator
+import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import scala.collection.JavaConverters._
+import org.butcher.implicits._
 
 class ButcherEval(dsl: TaglessCrypto[IO]) {
+  lazy val bootstrapSchema = CsvSchema.emptySchema().withHeader();
+  lazy val mapper = new CsvMapper()
 
-  def evalWithHeader(spec: String, row: ColumnReadable[String]): List[Either[Throwable, Butchered]] = {
+  def evalWithHeader(spec: String, data: String): Either[Throwable, List[(String, String)]] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
-    expressions.fold(
+    val res = expressions.fold(
       onFailure = {(_, _, extra) => List(Left(new Throwable(extra.trace().longMsg)))},
       onSuccess = {
         case (es, _) =>
-          eval(es, row)
+          val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
+          val r = mi.readAll().asScala.map(_.asScala.toMap).map {
+            row =>
+              eval(es, row)
+          }
+          r.toList.flatten
       }
     )
+    res.sequence
   }
 
-  def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, Butchered]] = {
-    ops.foldLeft(List.empty[Either[Throwable, Butchered]]) {
+  private def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[Either[Throwable, (String, String)]] = {
+    ops.foldLeft(List.empty[Either[Throwable, (String, String)]]) {
       case (acc, ColumnNamesMaskExpr(columns)) =>
         val masked = columns.map {
           c =>
-            row.get(c).map(v => Butchered(c, v.sha256.hex))
+            row.get(c).map(v => c -> v.sha256.hex)
         }
         acc ++ masked
       case (acc, ColumnNamesEncryptExpr(columns, keyId)) =>
@@ -42,7 +52,7 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
                   ed <- EitherT(dsl.encrypt(v, dk))
                 } yield ed
 
-                io.value.unsafeRunSync().map(enc => Butchered(c, enc))
+                io.value.unsafeRunSync().map(enc => c -> enc)
             }
         }
         acc ++ encrypted

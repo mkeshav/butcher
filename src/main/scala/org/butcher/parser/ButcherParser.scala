@@ -40,6 +40,6 @@ object ButcherParser {
 
   private def namesLineParser[_: P] = P(columnNamesLineMaskParser | columnNamesLineEncryptParser)
   private def indicesLineParser[_: P] = P(columnIndicesLineMaskParser | columnIndicesLineEncryptParser)
-  def nameSpecParser[_: P] = P(namesLineParser.rep)
-  def indicesSpecParser[_: P] = P(indicesLineParser.rep)
+  def nameSpecParser[_: P] = P(namesLineParser.rep(1))
+  def indicesSpecParser[_: P] = P(indicesLineParser.rep(1))
 }

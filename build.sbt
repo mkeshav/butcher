@@ -24,9 +24,9 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-effect" % "2.0.0",
   "com.outr" %% "hasher" % "1.2.1",
   //java
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1",
   "com.amazonaws" % "aws-java-sdk-kms" % "1.11.691",
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test
 )
