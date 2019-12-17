@@ -18,6 +18,7 @@ services:
       target: release
     volumes:
       - ~/.ssh:/root/.ssh
+      - .:/app
     environment:
       - SBT_OPTS=-Xms512M -Xmx2G -Xss2M -XX:MaxMetaspaceSize=1024M -XX:+CMSClassUnloadingEnabled
       - GITHUB_TOKEN
