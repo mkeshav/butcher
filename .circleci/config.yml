@@ -1,0 +1,67 @@
+# Scala CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/sample-config/ for more details
+#
+version: 2
+jobs:
+  test:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/butcher
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "build.sbt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: cat /dev/null | sbt test:compile
+
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.ivy2
+          key: v1-dependencies--{{ checksum "build.sbt" }}
+        
+      # run tests!
+      - run: cat /dev/null | sbt coverage test:test
+      - run: cat /dev/null | sbt coverageReport
+      - store_artifacts:
+          path: ./target/scala-2.12/scoverage-report
+          destination: coverage-report
+
+  sonar_scan:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Install Docker Compose
+          command: |
+            curl -L https://github.com/docker/compose/releases/download/1.24.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+
+      - run:
+          name: Scan
+          command: |
+            docker-compose run --rm dev ./scan.sh
+
+workflows:
+  version: 2
+  build-test-and-scan:
+    jobs:
+      - test  # your custom job from your config, that builds your code
+      - sonar_scan:
+          requires:
+            - test # We only run the "scan" job when test has succeeded
