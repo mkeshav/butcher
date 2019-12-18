@@ -69,7 +69,7 @@ jobs:
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
 
       - run:
-          name: Scan
+          name: Release
           command: |
             docker-compose run --rm release ./release.sh
 
