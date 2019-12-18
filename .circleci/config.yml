@@ -71,7 +71,7 @@ jobs:
       - run:
           name: Scan
           command: |
-            docker-compose run --rm release bash -c "sbt release with-defaults skip-tests"
+            docker-compose run --rm release bash -c "sbt 'release with-defaults skip-tests'"
 
 workflows:
   version: 2
