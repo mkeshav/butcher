@@ -9,6 +9,7 @@ RUN \
   apt-get update && \
   apt-get install -y \
     sbt=1.3.2 \
+    wget bsdtar \
     ca-certificates
 
 RUN update-ca-certificates
