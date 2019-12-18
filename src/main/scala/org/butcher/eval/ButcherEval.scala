@@ -21,26 +21,30 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
     val bootstrapSchema = CsvSchema.emptySchema().withHeader();
     val mapper = new CsvMapper()
-    val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
-    val res = expressions.fold(
-      onFailure = {(_, _, extra) => List(extra.trace().longMsg.asLeft)},
-      onSuccess = {
-        case (es, _) =>
-          val withRowIndex = mi.readAll().asScala.map(_.asScala.toMap).zipWithIndex
-          val r: mutable.Seq[OpResult[String]] = withRowIndex.map {
-            case (row, rowIdx) =>
-              val masked = eval(es, row)
-              masked.sequence.map {
-                m =>
-                  (row ++ m.toMap).map({case (_, v) => v}).mkString("|")
-              }.leftMap(m => s"$rowIdx:$m")
-          }
-          r
-      }
-    )
-    val s = mi.getParser.getSchema.asInstanceOf[CsvSchema]
-    val header = s.iterator().asScala.map(_.getName).mkString("|")
-    res.toList.sequence.map(rows => (header :: rows).mkString(System.lineSeparator))
+    try {
+      val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
+      val s = mi.getParser.getSchema.asInstanceOf[CsvSchema]
+      val header = s.iterator().asScala.map(_.getName).mkString("|")
+      val res = expressions.fold(
+        onFailure = {(_, _, extra) => List(extra.trace().longMsg.asLeft)},
+        onSuccess = {
+          case (es, _) =>
+            val withRowIndex = mi.readAll().asScala.map(_.asScala.toMap).zipWithIndex
+            val r: mutable.Seq[OpResult[String]] = withRowIndex.map {
+              case (row, rowIdx) =>
+                val masked = eval(es, row)
+                masked.sequence.map {
+                  m =>
+                    (row ++ m.toMap).map({case (_, v) => v}).mkString("|")
+                }.leftMap(m => s"$rowIdx:$m")
+            }
+            r
+        }
+      )
+      res.toList.sequence.map(rows => (header :: rows).mkString(System.lineSeparator))
+    } catch {
+      case e: Throwable => e.getMessage.asLeft
+    }
   }
 
   private def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[OpResult[(String, String)]] = {
