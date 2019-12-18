@@ -9,7 +9,7 @@ import org.butcher.internals.kms.KMSCryptoIOInterpreter
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Matchers}
 
-class EvalWithKmsTest extends FunSuite with Matchers with MockFactory {
+class KmsCryptoEvaluatorTest extends FunSuite with Matchers with MockFactory {
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
   val b64EncodedCipherTextBlob = "AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA=="
 
@@ -22,7 +22,7 @@ class EvalWithKmsTest extends FunSuite with Matchers with MockFactory {
   val decryptResult = new DecryptResult().withPlaintext(ByteBuffer.wrap(Base64.decode(b64EncodedPlainTextKey)))
   (kms.decrypt _).when(*).returns(decryptResult)
 
-  val e = new EvalWithKms(kms)
+  val e = new KmsCryptoEvaluator(kms)
 
   test("eval with kms") {
     val spec =

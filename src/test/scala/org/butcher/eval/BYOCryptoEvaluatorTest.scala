@@ -9,10 +9,10 @@ import org.scalatest.{FunSuite, Matchers}
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EvalWithCryptoTest extends FunSuite with Matchers {
+class BYOCryptoEvaluatorTest extends FunSuite with Matchers {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
   val c = KeyGen.crypto
-  val evaluator = new EvalWithCrypto(c)
+  val evaluator = new BYOCryptoEvaluator(c)
   val spec =
     s"""
        |column names in [driversLicence] then encrypt using kms key foo

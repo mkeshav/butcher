@@ -6,9 +6,9 @@ import org.butcher.internals.kms.KMSCryptoIOInterpreter
 import cats.effect.IO
 import org.butcher.OpResult
 
-class EvalWithKms(kmsClient: AWSKMS) {
+class KmsCryptoEvaluator(kmsClient: AWSKMS) {
   private lazy val ki = new KMSCryptoIOInterpreter(kmsClient)
-  private lazy val e = new EvalWithCrypto(new TaglessCrypto[IO](ki))
+  private lazy val e = new BYOCryptoEvaluator(new TaglessCrypto[IO](ki))
 
   def eval(spec: String, data: String): OpResult[String] = {
     e.evalWithHeader(spec, data)

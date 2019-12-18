@@ -16,7 +16,7 @@ import org.butcher.implicits._
 
 import scala.collection.mutable
 
-class EvalWithCrypto(dsl: TaglessCrypto[IO]) {
+class BYOCryptoEvaluator(dsl: TaglessCrypto[IO]) {
   def evalWithHeader(spec: String, data: String): OpResult[String] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
     val bootstrapSchema = CsvSchema.emptySchema().withHeader()
