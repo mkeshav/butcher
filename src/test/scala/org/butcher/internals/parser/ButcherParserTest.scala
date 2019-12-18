@@ -19,7 +19,7 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
     val data =
       Table(
         ("input", "result"),
-        (ml, Seq(ColumnNamesEncryptExpr(lc2, "foo"), ColumnNamesMaskExpr(lc1))),
+        (ml, Seq(ColumnNamesEncryptWithKmsExpr(lc2, "foo"), ColumnNamesMaskExpr(lc1))),
       )
 
     forAll(data) { (i: String, expected: Seq[Expr]) =>
@@ -42,7 +42,7 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
     val data =
       Table(
         ("input", "result"),
-        (ml, Seq(ColumnIndicesEncryptExpr(lc2, "foo"), ColumnIndicesMaskExpr(lc1))),
+        (ml, Seq(ColumnIndicesEncryptWithKmsExpr(lc2, "foo"), ColumnIndicesMaskExpr(lc1))),
       )
 
     forAll(data) { (i: String, expected: Seq[Expr]) =>

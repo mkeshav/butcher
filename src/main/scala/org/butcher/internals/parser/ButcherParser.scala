@@ -16,8 +16,8 @@ final case class UnknownExpr() extends Expr
 final case class ColumnNamesMaskExpr(override val columns: Seq[String]) extends Expr with ColumnNameExpr
 final case class ColumnIndicesMaskExpr(override val columns: Seq[Int]) extends Expr with ColumnIndexExpr
 
-final case class ColumnNamesEncryptExpr(override val columns: Seq[String], keyId: String) extends Expr with ColumnNameExpr
-final case class ColumnIndicesEncryptExpr(override val columns: Seq[Int], keyId: String) extends Expr with ColumnIndexExpr
+final case class ColumnNamesEncryptWithKmsExpr(override val columns: Seq[String], keyId: String) extends Expr with ColumnNameExpr
+final case class ColumnIndicesEncryptWithKmsExpr(override val columns: Seq[Int], keyId: String) extends Expr with ColumnIndexExpr
 
 private[butcher] object ButcherParser {
   private def Newline[_: P] = P( NoTrace(StringIn("\r\n", "\n")) )
@@ -29,13 +29,13 @@ private[butcher] object ButcherParser {
     ColumnNamesMaskExpr(_)
   }
   private def columnNamesLineEncryptParser[_: P]: P[Expr]  = P(IgnoreCase("column names in [") ~ commaSeparatedTokensParser ~ IgnoreCase("] then encrypt using kms key ") ~ tokenParser ~ Newline.rep(1).?).map {
-    case (columns, k) => ColumnNamesEncryptExpr(columns, k)
+    case (columns, k) => ColumnNamesEncryptWithKmsExpr(columns, k)
   }
   private def columnIndicesLineMaskParser[_: P]: P[Expr] = P(IgnoreCase("column indices in [") ~ commaSeparatedIndicesParser ~ IgnoreCase("] then mask") ~ Newline.rep(1).?).map {
     ColumnIndicesMaskExpr(_)
   }
   private def columnIndicesLineEncryptParser[_: P]: P[Expr]  = P(IgnoreCase("column indices in [") ~ commaSeparatedIndicesParser ~ IgnoreCase("] then encrypt using kms key ") ~ tokenParser ~ Newline.rep(1).?).map {
-    case (columns, k) => ColumnIndicesEncryptExpr(columns, k)
+    case (columns, k) => ColumnIndicesEncryptWithKmsExpr(columns, k)
   }
 
   private def namesLineParser[_: P] = P(columnNamesLineMaskParser | columnNamesLineEncryptParser)

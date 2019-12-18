@@ -16,7 +16,7 @@ import org.butcher.implicits._
 
 import scala.collection.mutable
 
-class ButcherEval(dsl: TaglessCrypto[IO]) {
+class EvalWithCrypto(dsl: TaglessCrypto[IO]) {
   def evalWithHeader(spec: String, data: String): OpResult[String] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
     val bootstrapSchema = CsvSchema.emptySchema().withHeader()
@@ -55,7 +55,7 @@ class ButcherEval(dsl: TaglessCrypto[IO]) {
             row.get(c).map(v => c -> v.sha256.hex)
         }
         acc ++ masked
-      case (acc, ColumnNamesEncryptExpr(columns, keyId)) =>
+      case (acc, ColumnNamesEncryptWithKmsExpr(columns, keyId)) =>
         val encrypted = columns.map {
           c =>
             row.get(c).flatMap {
