@@ -1,3 +1,3 @@
 # Release
 - Set GITHUB_TOKEN variable
-- `sbt release with-defaults skip-tests`
+- `sbt 'release with-defaults skip-tests'`
