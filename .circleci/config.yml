@@ -71,11 +71,11 @@ jobs:
       - run:
           name: Scan
           command: |
-            docker-compose run --rm release bash -c "sbt release with-defaults"
+            docker-compose run --rm release bash -c "sbt release with-defaults skip-tests"
 
 workflows:
   version: 2
-  scan-test-upload:
+  scan-test-release:
     jobs:
       - test  # your custom job from your config, that builds your code
       - sonar_scan
