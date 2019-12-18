@@ -24,6 +24,14 @@ RUN sbt update
 FROM base as release
 ADD . /app
 
+FROM base as sonar
+ENV SONAR_SCANNER_VERSION 4.2.0.1873
+RUN wget -qO- https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip | bsdtar -xvf - -C /usr/local/
+RUN chmod +x /usr/local/sonar-scanner-${SONAR_SCANNER_VERSION}-linux/bin/sonar-scanner
+RUN chmod +x /usr/local/sonar-scanner-${SONAR_SCANNER_VERSION}-linux/jre/bin/java
+RUN ln -s /usr/local/sonar-scanner-${SONAR_SCANNER_VERSION}-linux/bin/sonar-scanner /usr/bin/sonar-scanner
+ADD . /app
+
 # --- dev image
 FROM base as dev
 RUN apt-get install -y curl python3

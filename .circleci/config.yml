@@ -55,7 +55,7 @@ jobs:
       - run:
           name: Scan
           command: |
-            docker-compose run --rm dev ./scan.sh
+            docker-compose run --rm sonar ./scan.sh
 
 workflows:
   version: 2
