@@ -1,4 +1,4 @@
-package org.butcher.parser
+package org.butcher.internals.parser
 
 import fastparse.SingleLineWhitespace._
 import fastparse._
@@ -19,7 +19,7 @@ final case class ColumnIndicesMaskExpr(override val columns: Seq[Int]) extends E
 final case class ColumnNamesEncryptExpr(override val columns: Seq[String], keyId: String) extends Expr with ColumnNameExpr
 final case class ColumnIndicesEncryptExpr(override val columns: Seq[Int], keyId: String) extends Expr with ColumnIndexExpr
 
-object ButcherParser {
+private[butcher] object ButcherParser {
   private def Newline[_: P] = P( NoTrace(StringIn("\r\n", "\n")) )
   private def numberParser[_: P]: P[Int] = P( CharIn("0-9").rep(1).!.map(_.toInt) )
   private def commaSeparatedIndicesParser[_: P]: P[Seq[Int]] = P(numberParser.!.map(_.toInt).rep(1, sep=","))

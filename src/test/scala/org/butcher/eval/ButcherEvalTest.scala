@@ -6,8 +6,8 @@ import com.amazonaws.util.Base64
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.OpResult
-import org.butcher.kms.CryptoDsl.TaglessCrypto
-import org.butcher.kms.{CryptoDsl, DataKey}
+import org.butcher.internals.kms.CryptoDsl.TaglessCrypto
+import org.butcher.internals.kms.{CryptoDsl, DataKey}
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
@@ -79,7 +79,7 @@ class ButcherEvalTest extends FunSuite with Matchers {
     })
   }
 
-  test("encrypt:decrypt") {
+  test("eval: encrypt and decrypt") {
     val c = KeyGen.crypto
     val e = new ButcherEval(c)
     e.evalWithHeader(spec, data).fold({t => println(t); false should be(true)}, {

@@ -1,4 +1,4 @@
-package org.butcher.kms
+package org.butcher.internals.kms
 
 import java.nio.ByteBuffer
 

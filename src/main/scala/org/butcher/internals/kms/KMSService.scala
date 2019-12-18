@@ -1,4 +1,4 @@
-package org.butcher.kms
+package org.butcher.internals.kms
 
 import java.nio.ByteBuffer
 
@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec
 import cats.syntax.either._
 import org.butcher.OpResult
 
-object KMSService {
+private[internals] object KMSService {
   def encryptWith(data: String, dk: DataKey): Reader[AWSKMS, OpResult[String]] = Reader((kms: AWSKMS) => {
     try {
       encryptData(new SecretKeySpec(dk.plainText, "AES"), data) map {

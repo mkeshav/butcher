@@ -2,11 +2,11 @@ package org.butcher.eval
 
 import cats.data.EitherT
 import cats.effect.IO
-import org.butcher.parser._
+import org.butcher.internals.parser._
 import com.roundeights.hasher.Implicits._
 import org.butcher.{ColumnReadable, OpResult}
-import org.butcher.kms.CryptoDsl.TaglessCrypto
-import org.butcher.parser.ButcherParser.nameSpecParser
+import org.butcher.internals.kms.CryptoDsl.TaglessCrypto
+import org.butcher.internals.parser.ButcherParser.nameSpecParser
 import cats.implicits._
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}

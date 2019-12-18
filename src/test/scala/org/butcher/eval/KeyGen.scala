@@ -5,8 +5,8 @@ import javax.crypto.{Cipher, KeyGenerator}
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Base64
 import org.butcher.OpResult
-import org.butcher.kms.CryptoDsl.TaglessCrypto
-import org.butcher.kms.{CryptoDsl, DataKey}
+import org.butcher.internals.kms.CryptoDsl.TaglessCrypto
+import org.butcher.internals.kms.{CryptoDsl, DataKey}
 import cats.syntax.either._
 
 object KeyGen {

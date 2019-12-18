@@ -1,4 +1,4 @@
-package org.butcher.parser
+package org.butcher.internals.parser
 
 import org.scalatest.{Matchers, PropSpec}
 import ButcherParser._
