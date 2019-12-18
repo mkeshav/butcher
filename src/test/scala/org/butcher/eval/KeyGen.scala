@@ -5,9 +5,9 @@ import javax.crypto.{Cipher, KeyGenerator}
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Base64
 import org.butcher.OpResult
-import org.butcher.internals.kms.CryptoDsl.TaglessCrypto
-import org.butcher.internals.kms.{CryptoDsl, DataKey}
+import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import cats.syntax.either._
+import org.butcher.algebra.{CryptoDsl, DataKey}
 
 object KeyGen {
   private def genKey(algorithm: String, size: Int): Array[Byte] = {

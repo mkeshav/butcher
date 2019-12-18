@@ -6,12 +6,12 @@ import com.amazonaws.util.Base64
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.OpResult
-import org.butcher.internals.kms.CryptoDsl.TaglessCrypto
-import org.butcher.internals.kms.{CryptoDsl, DataKey}
+import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 import cats.implicits._
+import org.butcher.algebra.{CryptoDsl, DataKey}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

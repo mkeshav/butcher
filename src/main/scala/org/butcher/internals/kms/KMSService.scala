@@ -10,6 +10,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import cats.syntax.either._
 import org.butcher.OpResult
+import org.butcher.algebra.DataKey
 
 private[internals] object KMSService {
   def encryptWith(data: String, dk: DataKey): Reader[AWSKMS, OpResult[String]] = Reader((kms: AWSKMS) => {

@@ -5,7 +5,7 @@ import cats.effect.IO
 import org.butcher.internals.parser._
 import com.roundeights.hasher.Implicits._
 import org.butcher.{ColumnReadable, OpResult}
-import org.butcher.internals.kms.CryptoDsl.TaglessCrypto
+import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import org.butcher.internals.parser.ButcherParser.nameSpecParser
 import cats.implicits._
 import com.fasterxml.jackson.databind.MappingIterator
