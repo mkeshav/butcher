@@ -1,4 +1,3 @@
 # Release
 - Set GITHUB_TOKEN variable
-- `sbt`
-- `release release releaseVersion <version> nextVersion <version>-SNAPSHOT`
+- `sbt release with-defaults skip-tests`
