@@ -19,7 +19,7 @@ import scala.collection.mutable
 class ButcherEval(dsl: TaglessCrypto[IO]) {
   def evalWithHeader(spec: String, data: String): OpResult[String] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
-    val bootstrapSchema = CsvSchema.emptySchema().withHeader();
+    val bootstrapSchema = CsvSchema.emptySchema().withHeader()
     val mapper = new CsvMapper()
     try {
       val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)

@@ -1,15 +1,23 @@
 package org.butcher.eval
 
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import cats.implicits._
 import com.amazonaws.util.Base64
+import com.fasterxml.jackson.databind.MappingIterator
+import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.OpResult
 import org.butcher.kms.CryptoDsl.TaglessCrypto
 import org.butcher.kms.{CryptoDsl, DataKey}
 import org.scalatest.{FunSuite, Matchers}
 
+import scala.collection.JavaConverters._
+import cats.implicits._
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ButcherEvalTest extends FunSuite with Matchers {
+  implicit val cs: ContextShift[IO] = IO.contextShift(global)
+
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
   val b64EncodedCipherTextBlob = "AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA=="
 
@@ -68,6 +76,23 @@ class ButcherEvalTest extends FunSuite with Matchers {
     evaluator.evalWithHeader(spec, d).fold(
       {t => t should be("0:Column driversLicence not found")},
       {_ => false should be(true)
+    })
+  }
+
+  test("encrypt:decrypt") {
+    val c = KeyGen.crypto
+    val e = new ButcherEval(c)
+    e.evalWithHeader(spec, data).fold({t => println(t); false should be(true)}, {
+      r =>
+        val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator('|')
+        val mapper = new CsvMapper()
+        val mi: MappingIterator[java.util.Map[String, String]] =
+          mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(r.trim)
+        val ios = mi.readAll().asScala.map(_.asScala.toMap).map {
+          row =>
+            c.decrypt(row("driversLicence"))
+        }
+        ios.toList.parSequence.unsafeRunSync() should contain allElementsOf(List("666".asRight, "333".asRight))
     })
   }
 }
