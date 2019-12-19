@@ -13,7 +13,7 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
 
     val ml =
       s"""
-         |column names in [ ${lc2.mkString(",")}] then encrypt using kms key foo
+         |column names in [ ${lc2.mkString(", ")}] then encrypt using kms key foo
          |column names in [${lc1.mkString(",")} ] then mask
          |""".stripMargin
     val data =
