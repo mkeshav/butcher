@@ -52,11 +52,17 @@ class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
         val mapper = new CsvMapper()
         val mi: MappingIterator[java.util.Map[String, String]] =
           mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(r.trim)
-        val ios = mi.readAll().asScala.map(_.asScala.toMap).map {
+        val rows = mi.readAll().asScala.map(_.asScala.toMap)
+        val ios = rows.map {
           row =>
             c.decrypt(row("driversLicence"))
         }
         ios.toList.parSequence.unsafeRunSync() should contain allElementsOf(List("666".asRight, "333".asRight))
+
+        rows.map(row => row("donothing")) should contain allElementsOf(List("1", "2"))
+        rows.map(row => row("firstName")) should contain allElementsOf(
+          List("3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48",
+            "5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99"))
     })
   }
 
