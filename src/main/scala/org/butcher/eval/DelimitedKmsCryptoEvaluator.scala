@@ -6,11 +6,11 @@ import org.butcher.internals.kms.KMSCryptoIOInterpreter
 import cats.effect.IO
 import org.butcher.OpResult
 
-class KmsCryptoEvaluator(kmsClient: AWSKMS) {
+class DelimitedKmsCryptoEvaluator(kmsClient: AWSKMS) {
   private lazy val ki = new KMSCryptoIOInterpreter(kmsClient)
-  private lazy val e = new BYOCryptoEvaluator(new TaglessCrypto[IO](ki))
+  private lazy val e = new DelimitedBYOCryptoEvaluator(new TaglessCrypto[IO](ki))
 
   def eval(spec: String, data: String): OpResult[String] = {
-    e.evalWithHeader(spec, data)
+    e.evalDelimited(spec, data)
   }
 }

@@ -9,10 +9,10 @@ import org.scalatest.{FunSuite, Matchers}
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class BYOCryptoEvaluatorTest extends FunSuite with Matchers {
+class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
   val c = KeyGen.crypto
-  val evaluator = new BYOCryptoEvaluator(c)
+  val evaluator = new DelimitedBYOCryptoEvaluator(c)
   val spec =
     s"""
        |column names in [driversLicence] then encrypt using kms key foo
@@ -28,7 +28,7 @@ class BYOCryptoEvaluatorTest extends FunSuite with Matchers {
 
   test("unknown expression") {
     val p = Map("firstName" -> "satan", "driversLicence" -> "666")
-    evaluator.evalWithHeader("column is blah", data).isLeft should be(true)
+    evaluator.evalDelimited("column is blah", data).isLeft should be(true)
   }
 
   test("missing columns") {
@@ -39,14 +39,14 @@ class BYOCryptoEvaluatorTest extends FunSuite with Matchers {
         |god,2
         |""".stripMargin
 
-    evaluator.evalWithHeader(spec, d).fold(
+    evaluator.evalDelimited(spec, d).fold(
       {t => t should be("0:Column driversLicence not found")},
       {_ => false should be(true)
     })
   }
 
   test("eval: encrypt and decrypt") {
-    evaluator.evalWithHeader(spec, data).fold({t => println(t); false should be(true)}, {
+    evaluator.evalDelimited(spec, data).fold({t => println(t); false should be(true)}, {
       r =>
         val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator('|')
         val mapper = new CsvMapper()
@@ -59,4 +59,9 @@ class BYOCryptoEvaluatorTest extends FunSuite with Matchers {
         ios.toList.parSequence.unsafeRunSync() should contain allElementsOf(List("666".asRight, "333".asRight))
     })
   }
+
+  test("wrong method") {
+    evaluator.evalJson(spec, data).isLeft should be(true)
+  }
+
 }

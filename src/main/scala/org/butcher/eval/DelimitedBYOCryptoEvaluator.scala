@@ -16,10 +16,10 @@ import org.butcher.implicits._
 
 import scala.collection.mutable
 
-class BYOCryptoEvaluator(dsl: TaglessCrypto[IO]) {
-  def evalWithHeader(spec: String, data: String): OpResult[String] = {
+class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO]) extends Evaluator {
+  override def evalDelimited(spec: String, data: String, delimiter: Char = ','): OpResult[String] = {
     val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
-    val bootstrapSchema = CsvSchema.emptySchema().withHeader()
+    val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(delimiter)
     val mapper = new CsvMapper()
     try {
       val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
@@ -71,5 +71,9 @@ class BYOCryptoEvaluator(dsl: TaglessCrypto[IO]) {
         acc ++ encrypted
       case (acc, _) => acc ++ List("Unknown expression".asLeft)
     }
+  }
+
+  override def evalJson(spec: String, data: String): OpResult[String] = {
+    "Use the right method son!!".asLeft
   }
 }
