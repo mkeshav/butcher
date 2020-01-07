@@ -2,7 +2,7 @@ name := "butcher"
 organization := "org.butcher"
 
 scalaVersion := "2.12.10"
-
+val circeVersion = "0.12.3"
 scalacOptions ++= Seq(
   "-encoding", "UTF-8", "-target:jvm-1.8", "-deprecation",
   "-feature", "-language:postfixOps,higherKinds,implicitConversions,existentials", "-unchecked")
@@ -22,6 +22,10 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fastparse" % "2.1.3",
   "org.typelevel" %% "cats-core" % "2.0.0",
   "org.typelevel" %% "cats-effect" % "2.0.0",
+  "io.circe" %% "circe-core"% circeVersion,
+  "io.circe" %% "circe-generic"% circeVersion,
+  "io.circe" %% "circe-parser"% circeVersion,
+  "io.circe" %% "circe-java8"% "0.12.0-M1",
   "com.outr" %% "hasher" % "1.2.1",
   //java
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1",
