@@ -1,4 +1,4 @@
-package org.butcher.internals.kms
+package org.butcher.interpreters
 
 import cats.effect.IO
 import com.amazonaws.services.kms.AWSKMS

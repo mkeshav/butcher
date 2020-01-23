@@ -12,7 +12,7 @@ import cats.syntax.either._
 import org.butcher.OpResult
 import org.butcher.algebra.DataKey
 
-private[internals] object KMSService {
+private[butcher] object KMSService {
   def encryptWith(data: String, dk: DataKey): Reader[AWSKMS, OpResult[String]] = Reader((kms: AWSKMS) => {
     try {
       encryptData(new SecretKeySpec(dk.plainText, "AES"), data) map {

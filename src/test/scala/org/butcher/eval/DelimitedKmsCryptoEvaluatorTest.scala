@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import com.amazonaws.services.kms.AWSKMS
 import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyResult}
 import com.amazonaws.util.Base64
-import org.butcher.internals.kms.KMSCryptoIOInterpreter
+import org.butcher.interpreters.KMSCryptoIOInterpreter
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Matchers}
 

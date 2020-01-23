@@ -27,8 +27,11 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser"% circeVersion,
   "io.circe" %% "circe-java8"% "0.12.0-M1",
   "com.outr" %% "hasher" % "1.2.1",
+  "com.gu" %% "scanamo" % "1.0.0-M8",
+
   //java
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1",
+  "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.711",
   "com.amazonaws" % "aws-java-sdk-kms" % "1.11.691",
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
