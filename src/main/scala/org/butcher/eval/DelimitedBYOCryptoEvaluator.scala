@@ -6,37 +6,43 @@ import org.butcher.internals.parser._
 import com.roundeights.hasher.Implicits._
 import org.butcher.{ColumnReadable, OpResult}
 import org.butcher.algebra.CryptoDsl.TaglessCrypto
-import org.butcher.internals.parser.ButcherParser.nameSpecParser
+import org.butcher.internals.parser.ButcherParser.block
 import cats.implicits._
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 
 import scala.collection.JavaConverters._
 import org.butcher.implicits._
+import io.circe.syntax._
+import org.butcher.algebra.StorageDsl.TaglessStorage
+import org.butcher.algebra.{EncryptionResult, StorageDsl}
 
 import scala.collection.mutable
 
-class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO]) extends Evaluator {
+class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO],
+                                  storage: TaglessStorage[IO]) extends Evaluator {
   override def evalDelimited(spec: String, data: String, delimiter: Char = ','): OpResult[String] = {
-    val expressions = fastparse.parse(spec.trim, nameSpecParser(_))
+    val expression = fastparse.parse(spec.trim, block(_))
     val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(delimiter)
     val mapper = new CsvMapper()
     try {
       val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
       val s = mi.getParser.getSchema.asInstanceOf[CsvSchema]
       val header = s.iterator().asScala.map(_.getName).mkString("|")
-      val res = expressions.fold(
+      val res = expression.fold(
         onFailure = {(_, _, extra) => List(extra.trace().longMsg.asLeft)},
         onSuccess = {
-          case (es, _) =>
+          case (expr, _) =>
             val withRowIndex = mi.readAll().asScala.map(_.asScala.toMap).zipWithIndex
-            val r: mutable.Seq[OpResult[String]] = withRowIndex.map {
+            val r = withRowIndex.map {
               case (row, rowIdx) =>
-                val masked = eval(es, row)
-                masked.sequence.map {
-                  m =>
-                    (row ++ m.toMap).map({case (_, v) => v}).mkString("|")
+                eval(expr, row).map {
+                  v =>
+                    val rid = v._1
+                    val sensitive = v._2.map(m => (m._1, m._2.sha256.hex))
+                    (row ++ sensitive.toMap ++ Map("encryptedRowId" -> rid)).map({case (_, v) => v}).mkString("|")
                 }.leftMap(m => s"$rowIdx:$m")
+
             }
             r
         }
@@ -47,29 +53,31 @@ class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO]) extends Evaluator {
     }
   }
 
-  private def eval(ops: Seq[Expr], row: ColumnReadable[String]): List[OpResult[(String, String)]] = {
-    ops.foldLeft(List.empty[OpResult[(String, String)]]) {
-      case (acc, ColumnNamesMaskExpr(columns)) =>
-        val masked = columns.map {
-          c =>
-            row.get(c).map(v => c -> v.sha256.hex)
-        }
-        acc ++ masked
-      case (acc, ColumnNamesEncryptWithKmsExpr(columns, keyId)) =>
-        val encrypted = columns.map {
-          c =>
-            row.get(c).flatMap {
-              v =>
-                val io = for {
-                  dk <- EitherT(dsl.generateKey(keyId))
-                  ed <- EitherT(dsl.encrypt(v, dk))
-                } yield ed
+  private def extract(row: ColumnReadable[String], columns: Seq[String]) = {
+    columns.map {
+      c =>
+        row.get(c).map(v => (c, v))
+    }.toList.sequence
+  }
 
-                io.value.unsafeRunSync().map(enc => c -> enc)
-            }
-        }
-        acc ++ encrypted
-      case (acc, _) => acc ++ List("Unknown expression".asLeft)
+  private def generateUniqueId(row: ColumnReadable[String], pkColumns: Seq[String]) = {
+    val d = extract(row, pkColumns)
+    d.map(_.sortBy(_._1).map(_._2).mkString.sha256.hex)
+  }
+
+  private def eval(op: Expr, row: ColumnReadable[String]) = {
+    op match {
+      case EncryptColumnsWithPKExpression(encryptColumns, keyId, pkColumns) =>
+        val f = for {
+          sensitive <- EitherT(IO.pure(extract(row, encryptColumns)))
+          id <- EitherT(IO.pure(generateUniqueId(row, pkColumns)))
+          dk <- EitherT(dsl.generateKey(keyId))
+          er <- EitherT(dsl.encrypt(sensitive.toMap.asJson.noSpaces, dk))
+          _ <- EitherT(storage.put(EncryptionResult(dk.cipher, id, er)))
+        } yield (id, sensitive)
+
+        f.value.unsafeRunSync
+      case _ => "Unknown Expression".asLeft
     }
   }
 

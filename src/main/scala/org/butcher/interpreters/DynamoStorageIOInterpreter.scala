@@ -8,7 +8,7 @@ import org.butcher.internals.storage.DynamoService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DynamoStorageIOInterpreter(tableName: String, db: AmazonDynamoDBAsync) extends StorageDsl[IO] {
+private[butcher] class DynamoStorageIOInterpreter(tableName: String, db: AmazonDynamoDBAsync) extends StorageDsl[IO] {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
 
   override def get(rowId: String): IO[OpResult[CipherRow]] = {

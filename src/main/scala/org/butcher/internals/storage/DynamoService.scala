@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 private[butcher] object DynamoService {
   def storeCipher(tableName: String, er: EncryptionResult):
     Reader[AmazonDynamoDBAsync, Future[OpResult[CipherRow]]] = Reader((dynamo: AmazonDynamoDBAsync) =>  {
-    val cipherRow = CipherRow(er.rowId, er.data, er.dataKey, utcNowEpochMillis)
+    val cipherRow = CipherRow(er.rowId, er.encryptedData, er.dataKey, utcNowEpochMillis)
     val t = Table[CipherRow](tableName)
     val ops = for {
       _ <- t.put(cipherRow)

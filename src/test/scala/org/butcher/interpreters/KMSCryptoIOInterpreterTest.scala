@@ -27,8 +27,9 @@ class KMSCryptoIOInterpreterTest extends FunSuite with Matchers with MockFactory
     val f = for {
       dk <- EitherT(interpreter.generateKey("foo"))
       ed <- EitherT(interpreter.encrypt("foo", dk))
-      dec <- EitherT(interpreter.decrypt(ed))
-    } yield (ed, dec)
+      ss <- EitherT(interpreter.decryptKey(dk.cipher))
+      dd <- EitherT(interpreter.decrypt(ss, ed))
+    } yield (ed, dd)
 
     f.value.unsafeRunSync().fold({t => println(t); false should be(true)}, {
       v =>

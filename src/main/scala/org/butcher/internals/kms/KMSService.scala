@@ -42,13 +42,13 @@ private[butcher] object KMSService {
       val data = parts(1).split(":")(1)
 
       val dkr = decryptKey(key).run(kms)
-      dkr.map(ptk => decryptData(ptk, data))
+      dkr.flatMap(ptk => decryptData(ptk, data))
     } catch {
       case e: Throwable => e.getMessage.asLeft
     }
   })
 
-  private def decryptKey(base64EncodedCipher: String): Reader[AWSKMS, OpResult[SecretKeySpec]] = Reader((kms: AWSKMS) => {
+  def decryptKey(base64EncodedCipher: String): Reader[AWSKMS, OpResult[SecretKeySpec]] = Reader((kms: AWSKMS) => {
     try {
       val dkr = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(Base64.decode(base64EncodedCipher)))
       val ptk = kms.decrypt(dkr).getPlaintext
@@ -58,11 +58,15 @@ private[butcher] object KMSService {
     }
   })
 
-  private def decryptData(key: SecretKeySpec, encryptedData: String) = {
-    val decodeBase64src = Base64.decode(encryptedData.getBytes)
-    val cipher = Cipher.getInstance("AES")
-    cipher.init(Cipher.DECRYPT_MODE, key)
-    new String(cipher.doFinal(decodeBase64src))
+  def decryptData(key: SecretKeySpec, encryptedData: String): OpResult[String] = {
+    try {
+      val decodeBase64src = Base64.decode(encryptedData.getBytes)
+      val cipher = Cipher.getInstance("AES")
+      cipher.init(Cipher.DECRYPT_MODE, key)
+      new String(cipher.doFinal(decodeBase64src)).asRight
+    } catch {
+      case e: Throwable => e.getMessage.asLeft
+    }
   }
 
   private def encryptData(key: SecretKeySpec, data: String): OpResult[String] = {
