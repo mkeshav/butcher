@@ -8,16 +8,14 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
-import org.butcher.OpResult
 import org.butcher.algebra.StorageDsl.TaglessStorage
-import org.butcher.algebra.{CipherRow, EncryptionResult, StorageDsl}
 import org.butcher.implicits._
 import org.butcher.internals.interpreters.DynamoStorageIOInterpreter
 import org.butcher.parser.ButcherParser.block
 import org.scalatest.{FunSuite, Matchers}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ColumnReadableEvaluatorTest extends FunSuite with Matchers {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
@@ -26,7 +24,7 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers {
     .withCredentials(awsCredentialsProvider)
     .withEndpointConfiguration(
       new EndpointConfiguration(
-        "http://dynamo:8000",
+        "http://localhost:8000",
         "ap-southeast-2")).build()
 
   val di = new DynamoStorageIOInterpreter("test", db)

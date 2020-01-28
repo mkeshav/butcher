@@ -17,7 +17,7 @@ class DynamoServiceTest extends FunSuite with BeforeAndAfterAll with Matchers {
     .withCredentials(awsCredentialsProvider)
     .withEndpointConfiguration(
       new EndpointConfiguration(
-        "http://dynamo:8000",
+        "http://localhost:8000",
         "ap-southeast-2")).build()
 
   test("store") {
