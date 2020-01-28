@@ -1,11 +1,21 @@
 package org
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.dynamodbv2.model.{AttributeDefinition, CreateTableRequest, DescribeTableRequest, KeySchemaElement, KeyType, ProvisionedThroughput, ScalarAttributeType, TableStatus}
+
 import scala.collection.JavaConverters._
 
 package object test {
   object dynamo {
+    def createClient(endpoint: String) = {
+      val awsCredentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials("", ""))
+      AmazonDynamoDBAsyncClientBuilder.standard()
+        .withCredentials(awsCredentialsProvider)
+        .withEndpointConfiguration(
+          new EndpointConfiguration(endpoint, "ap-southeast-2")).build()
+    }
     def createTable(tableName: String, dynamoClient: AmazonDynamoDBAsync): Unit = {
       println(s"creating $tableName table")
       try {

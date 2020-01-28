@@ -13,21 +13,15 @@ import org.butcher.implicits._
 import org.butcher.internals.interpreters.DynamoStorageIOInterpreter
 import org.butcher.parser.ButcherParser.block
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
-import org.test.dynamo.createTable
+import org.test.dynamo._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndAfterAll {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
-  val awsCredentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials("", ""))
-  val db = AmazonDynamoDBAsyncClientBuilder.standard()
-    .withCredentials(awsCredentialsProvider)
-    .withEndpointConfiguration(
-      new EndpointConfiguration(
-        "http://localhost:8000",
-        "ap-southeast-2")).build()
-
+  val endpoint = sys.env.getOrElse("DYNAMO_ENDPOINT", "http://localhost:8000")
+  val db = createClient(endpoint)
   val di = new DynamoStorageIOInterpreter("test", db)
   lazy val storage = new TaglessStorage[IO](di)
 

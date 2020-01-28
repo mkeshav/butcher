@@ -15,6 +15,7 @@ services:
       - .:/app:cached
     environment:
       - SBT_OPTS=-Xms512M -Xmx2G -Xss2M -XX:MaxMetaspaceSize=1024M -XX:+CMSClassUnloadingEnabled
+      - DYNAMO_ENDPOINT=http://dynamo:8000
     command: >
       bash -c "./init_bloop.sh && bash"
 
