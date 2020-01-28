@@ -8,18 +8,19 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
-      - image: dwmkerr/dynamodb
+      - image: circleci/dynamodb:8-jdk
         entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
 
     working_directory: ~/butcher
 
     environment:
       # Customize the JVM maximum heap limit
-      JAVA_TOOL_OPTIONS: -Xmx3200m
+      JAVA_TOOL_OPTIONS: -Xmx2048m
       TERM: dumb
     
     steps:
       - checkout
+      - setup_remote_docker
 
       # Download and cache dependencies
       - restore_cache:
