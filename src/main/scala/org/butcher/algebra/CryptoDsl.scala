@@ -4,7 +4,7 @@ import cats.Monad
 import javax.crypto.spec.SecretKeySpec
 import org.butcher.OpResult
 
-final case class DataKey(plainText: Array[Byte], cipher:String)
+final case class DataKey(plainText: Array[Byte], cipher:String, algorithm: String)
 
 trait CryptoDsl[F[_]] {
   def generateKey(keyId: String): F[OpResult[DataKey]]

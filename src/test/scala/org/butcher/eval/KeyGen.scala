@@ -37,7 +37,7 @@ object KeyGen {
   lazy val crypto = new TaglessCrypto[IO](new CryptoDsl[IO] {
     override def generateKey(keyId: String): IO[OpResult[DataKey]] = IO{
       val ptk = genKey("AES", 256)
-      DataKey(ptk, Base64.encodeBase64String(ptk)).asRight
+      DataKey(ptk, Base64.encodeBase64String(ptk), "AES").asRight
     }
 
     override def encrypt(data: String, dk: DataKey): IO[OpResult[String]] = {

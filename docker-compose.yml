@@ -1,7 +1,13 @@
 version: '3.7'
 
 services:
+  dynamo:
+    image: dwmkerr/dynamodb
+    ports:
+      - 8000:8000
   dev:
+    depends_on:
+      - dynamo
     build:
       context: .
       target: dev

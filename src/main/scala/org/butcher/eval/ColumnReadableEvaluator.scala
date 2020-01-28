@@ -12,20 +12,8 @@ import org.butcher.algebra.{DataKey, EncryptionResult}
 import org.butcher.parser.{EncryptColumnsWithPKExpression, _}
 import org.butcher.{ColumnReadable, OpResult}
 
-class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO],
-                                  storage: TaglessStorage[IO]) extends Evaluator {
-  private def extract(row: ColumnReadable, columns: Seq[String]) = {
-    columns.map {
-      c =>
-        row.get(c).map(v => (c, v))
-    }.toList.sequence
-  }
-
-  private def generateUniqueId(row: ColumnReadable, pkColumns: Seq[String]) = {
-    val d = extract(row, pkColumns)
-    d.map(_.sortBy(_._1).map(_._2).mkString.sha256.hex)
-  }
-
+class ColumnReadableEvaluator(dsl: TaglessCrypto[IO],
+                              storage: TaglessStorage[IO]) extends Evaluator {
 
   override def eval[T >: Parsed[Expr]](expr: T, key: DataKey, row: ColumnReadable): IO[OpResult[EvalResult]] = {
     val res: IO[OpResult[EvalResult]] = expr.asInstanceOf[Parsed[Expr]].fold(
@@ -45,6 +33,19 @@ class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO],
     )
     res
   }
+
+  private def extract(row: ColumnReadable, columns: Seq[String]) = {
+    columns.map {
+      c =>
+        row.get(c).map(v => (c, v))
+    }.toList.sequence
+  }
+
+  private def generateUniqueId(row: ColumnReadable, pkColumns: Seq[String]) = {
+    val d = extract(row, pkColumns)
+    d.map(_.sortBy(_._1).map(_._2).mkString.sha256.hex)
+  }
+
 
   private def doWork(expr: Expr, key: DataKey, row: ColumnReadable): IO[OpResult[(String, List[(String, String)])]] = {
     expr match {

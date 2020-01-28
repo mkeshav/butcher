@@ -25,13 +25,18 @@ class KMSServiceTest extends FunSuite with MockFactory with Matchers {
 
     val f = for {
       dk <- generateDataKey("foo").run(kms)
-      ed <- encryptWith("foo", dk).run(kms)
+      ed <- encryptWith("foo", dk)
     } yield ed
 
     f.fold({t => println(t); false should be(true)}, {
       v =>
-        v should be("key:AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA==,data:5gVr+Ca1Tqs9BirpPopOmw==")
-        parseAndDecrypt(v).run(kms) should be(Right("foo"))
+        v should be("5gVr+Ca1Tqs9BirpPopOmw==")
+        val dec = for {
+          k <- decryptKey(b64EncodedCipherTextBlob).run(kms)
+          dd <- decryptData(k, "5gVr+Ca1Tqs9BirpPopOmw==")
+        } yield dd
+
+        dec should be(Right("foo"))
     })
   }
 
@@ -40,7 +45,7 @@ class KMSServiceTest extends FunSuite with MockFactory with Matchers {
     (kms.generateDataKey _).when(_:GenerateDataKeyRequest).throwing(new Throwable("Say permission error"))
     val f = for {
       dk <- generateDataKey("foo").run(kms)
-      ed <- encryptWith("foo", dk).run(kms)
+      ed <- encryptWith("foo", dk)
     } yield ed
     f.isLeft should be(true)
   }

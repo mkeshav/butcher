@@ -11,7 +11,7 @@ import org.butcher.internals.KMSService.{decryptData, encryptWith, generateDataK
 private[butcher] class KMSCryptoIOInterpreter(kms: AWSKMS) extends CryptoDsl[IO] {
   override def generateKey(keyId: String): IO[OpResult[DataKey]] = IO(generateDataKey(keyId).run(kms))
 
-  override def encrypt(data: String, dk: DataKey): IO[OpResult[String]] = IO(encryptWith(data, dk).run(kms))
+  override def encrypt(data: String, dk: DataKey): IO[OpResult[String]] = IO(encryptWith(data, dk))
 
   override def decryptKey(cipher: String): IO[OpResult[SecretKeySpec]] = IO(KMSService.decryptKey(cipher).run(kms))
 

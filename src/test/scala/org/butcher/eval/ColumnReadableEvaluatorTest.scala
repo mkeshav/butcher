@@ -3,34 +3,37 @@ package org.butcher.eval
 import cats.data.EitherT
 import cats.effect.{ContextShift, IO}
 import cats.implicits._
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.OpResult
 import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.algebra.{CipherRow, EncryptionResult, StorageDsl}
 import org.butcher.implicits._
+import org.butcher.internals.interpreters.DynamoStorageIOInterpreter
 import org.butcher.parser.ButcherParser.block
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 
-class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
+class ColumnReadableEvaluatorTest extends FunSuite with Matchers {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
-  lazy val storage = new TaglessStorage[IO](new StorageDsl[IO] {
-    override def put(er: EncryptionResult): IO[OpResult[CipherRow]] = IO {
-      CipherRow(er.rowId, er.encryptedData, er.dataKey, System.currentTimeMillis).asRight
-    }
+  val awsCredentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials("", ""))
+  val db = AmazonDynamoDBAsyncClientBuilder.standard()
+    .withCredentials(awsCredentialsProvider)
+    .withEndpointConfiguration(
+      new EndpointConfiguration(
+        "http://dynamo:8000",
+        "ap-southeast-2")).build()
 
-    override def get(rowId: String): IO[OpResult[CipherRow]] = IO("Not Implemented".asLeft)
-
-    override def remove(rowId: String): IO[OpResult[Int]] = IO("Not Implemented".asLeft)
-
-    override def update(rowId: String, encryptedData: String): IO[OpResult[CipherRow]] = IO("Not Implemented".asLeft)
-  })
+  val di = new DynamoStorageIOInterpreter("test", db)
+  lazy val storage = new TaglessStorage[IO](di)
 
   val c = KeyGen.crypto
-  val evaluator = new DelimitedBYOCryptoEvaluator(c, storage)
+  val evaluator = new ColumnReadableEvaluator(c, storage)
   val spec =
     s"""
        |encrypt columns [firstName, driversLicence] using key foo
@@ -41,7 +44,8 @@ class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
     val data = Map[String, String](
       "firstName" -> "satan", "driversLicence" -> "666", "donothing" -> "1"
     )
-    val expected = Right(EvalResult("3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|c7e616822f366fb1b5e0756af498cc11d2c0862edcb32ca65882f622ff39de1b|1",
+    val expected = Right(EvalResult(
+      "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|c7e616822f366fb1b5e0756af498cc11d2c0862edcb32ca65882f622ff39de1b|1",
       "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"))
     val parsed = fastparse.parse(spec.trim, block(_))
     val f = for {
@@ -52,6 +56,10 @@ class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
     val result = f.value.unsafeRunSync
     result.isRight should be(true)
     result should be(expected)
+
+    storage.get("3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48")
+      .unsafeRunSync.isRight should be(true)
+
   }
 
   test("delimited") {
@@ -62,6 +70,10 @@ class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
         |god,333,2
         |""".stripMargin
 
+    val expected = List(
+      EvalResult("3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|c7e616822f366fb1b5e0756af498cc11d2c0862edcb32ca65882f622ff39de1b|1","3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"),
+      EvalResult("5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99|556d7dc3a115356350f1f9910b1af1ab0e312d4b3e4fc788d2da63668f36d017|2","5723360ef11043a879520412e9ad897e0ebcb99cc820ec363bfecc9d751a1a99")
+    )
     val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(',')
     val mapper = new CsvMapper()
     try {
@@ -77,7 +89,7 @@ class DelimitedBYOCryptoEvaluatorTest extends FunSuite with Matchers {
           f.value
       }
       val seqd = result.toList.sequence.map(_.sequence)
-      println(seqd.unsafeRunSync)
+      seqd.unsafeRunSync should be(Right(expected))
     } catch {
       case _: Throwable => fail()
     }
