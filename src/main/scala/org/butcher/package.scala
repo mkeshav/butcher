@@ -4,12 +4,15 @@ import java.time.{ZoneId, ZonedDateTime}
 
 package object butcher {
   type OpResult[T] = Either[String, T]
-  trait ColumnReadable[T] {
-    def get(column: String): OpResult[T]
+  trait ColumnReadable {
+    def get(column: String): OpResult[String]
+    def toMap: Map[String, String]
   }
 
-  class NamedLookup[T](m: Map[String, T]) extends ColumnReadable[T] {
-    override def get(column: String): OpResult[T] = m.get(column).toRight(s"Column $column not found")
+  class NamedLookup(m: Map[String, String]) extends ColumnReadable {
+    override def get(column: String): OpResult[String] = m.get(column).toRight(s"Column $column not found")
+
+    override def toMap: Map[String, String] = m
   }
 
   object time {
@@ -18,6 +21,6 @@ package object butcher {
   }
 
   object implicits {
-    implicit def makeMyMapColumnReadable(m: Map[String, String]): NamedLookup[String] = new NamedLookup(m)
+    implicit def makeMyMapColumnReadable(m: Map[String, String]): NamedLookup = new NamedLookup(m)
   }
 }

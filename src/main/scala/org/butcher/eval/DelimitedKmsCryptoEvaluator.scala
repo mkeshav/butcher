@@ -14,7 +14,4 @@ class DelimitedKmsCryptoEvaluator(kmsClient: AWSKMS, tableName: String, dynamo: 
   private lazy val e = new DelimitedBYOCryptoEvaluator(new TaglessCrypto[IO](ki),
     new TaglessStorage[IO](si))
 
-  def eval(spec: String, data: String): OpResult[String] = {
-    e.evalDelimited(spec, data)
-  }
 }

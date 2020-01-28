@@ -1,8 +1,12 @@
 package org.butcher.eval
 
-import org.butcher.OpResult
+import fastparse.Parsed
+import org.butcher.{ColumnReadable, OpResult}
+import org.butcher.algebra.DataKey
+import org.butcher.internals.parser.Expr
+import cats.effect.IO
 
+final case class EvalResult(row: String, encryptedContentId: String)
 trait Evaluator {
-  def evalDelimited(spec: String, data: String, delimiter: Char): OpResult[String]
-  def evalJson(spec: String, data: String): OpResult[String]
+  def eval[T >: Parsed[Expr]](expr: T, key: DataKey, row: ColumnReadable):IO[OpResult[EvalResult]]
 }
