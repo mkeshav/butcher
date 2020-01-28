@@ -9,7 +9,6 @@ jobs:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
       - image: circleci/dynamodb:8-jdk
-        entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
 
     working_directory: ~/butcher
 
