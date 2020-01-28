@@ -9,7 +9,7 @@ import org.butcher.OpResult
 import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.algebra.{CipherRow, EncryptionResult, StorageDsl}
 import org.butcher.implicits._
-import org.butcher.internals.parser.ButcherParser.block
+import org.butcher.parser.ButcherParser.block
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -9,7 +9,7 @@ import io.circe.syntax._
 import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.algebra.{DataKey, EncryptionResult}
-import org.butcher.internals.parser.{EncryptColumnsWithPKExpression, _}
+import org.butcher.parser.{EncryptColumnsWithPKExpression, _}
 import org.butcher.{ColumnReadable, OpResult}
 
 class DelimitedBYOCryptoEvaluator(dsl: TaglessCrypto[IO],

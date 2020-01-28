@@ -1,10 +1,10 @@
-package org.butcher.interpreters
+package org.butcher.internals.interpreters
 
 import cats.effect.{ContextShift, IO}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import org.butcher.OpResult
 import org.butcher.algebra.{CipherRow, EncryptionResult, StorageDsl}
-import org.butcher.internals.storage.DynamoService
+import org.butcher.internals.DynamoService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

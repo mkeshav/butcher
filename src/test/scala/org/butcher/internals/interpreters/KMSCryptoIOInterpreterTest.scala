@@ -1,4 +1,4 @@
-package org.butcher.interpreters
+package org.butcher.internals.interpreters
 
 import java.nio.ByteBuffer
 

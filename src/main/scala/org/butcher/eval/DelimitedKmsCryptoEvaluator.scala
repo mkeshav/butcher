@@ -6,7 +6,7 @@ import cats.effect.IO
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import org.butcher.OpResult
 import org.butcher.algebra.StorageDsl.TaglessStorage
-import org.butcher.interpreters.{DynamoStorageIOInterpreter, KMSCryptoIOInterpreter}
+import org.butcher.internals.interpreters.{DynamoStorageIOInterpreter, KMSCryptoIOInterpreter}
 
 class DelimitedKmsCryptoEvaluator(kmsClient: AWSKMS, tableName: String, dynamo: AmazonDynamoDBAsync) {
   private lazy val ki = new KMSCryptoIOInterpreter(kmsClient)

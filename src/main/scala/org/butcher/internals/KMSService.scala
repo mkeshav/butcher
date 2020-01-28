@@ -1,4 +1,4 @@
-package org.butcher.internals.kms
+package org.butcher.internals
 
 import java.nio.ByteBuffer
 
@@ -8,11 +8,11 @@ import com.amazonaws.services.kms.model.{DataKeySpec, DecryptRequest, GenerateDa
 import com.amazonaws.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
-import cats.syntax.either._
 import org.butcher.OpResult
 import org.butcher.algebra.DataKey
+import cats.implicits._
 
-private[butcher] object KMSService {
+private[internals] object KMSService {
   def encryptWith(data: String, dk: DataKey): Reader[AWSKMS, OpResult[String]] = Reader((kms: AWSKMS) => {
     try {
       encryptData(new SecretKeySpec(dk.plainText, "AES"), data) map {

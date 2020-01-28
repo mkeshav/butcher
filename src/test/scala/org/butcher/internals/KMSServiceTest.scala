@@ -1,13 +1,13 @@
-package org.butcher.internals.kms
+package org.butcher.internals
 
 import java.nio.ByteBuffer
 
 import com.amazonaws.services.kms.AWSKMS
 import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyRequest, GenerateDataKeyResult}
 import com.amazonaws.util.Base64
+import org.butcher.internals.KMSService._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Matchers}
-import KMSService._
 
 class KMSServiceTest extends FunSuite with MockFactory with Matchers {
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="

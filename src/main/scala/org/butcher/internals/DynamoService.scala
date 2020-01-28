@@ -1,19 +1,22 @@
-package org.butcher.internals.storage
+package org.butcher.internals
 
 import cats.data.Reader
-import cats.syntax.either._
+import cats.effect.{ContextShift, IO}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
+import com.gu.scanamo.syntax.set
 import com.gu.scanamo.{ScanamoAsync, Table}
-import org.butcher.algebra.{CipherRow, EncryptionResult}
-
-import scala.concurrent.Future
-import org.butcher.time._
-import com.gu.scanamo.syntax._
 import org.butcher.OpResult
+import org.butcher.algebra.{CipherRow, EncryptionResult}
+import org.butcher.time.utcNowEpochMillis
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import cats.implicits._
+import com.gu.scanamo.syntax._
 
-private[butcher] object DynamoService {
+private[internals] object DynamoService {
+  implicit val cs: ContextShift[IO] = IO.contextShift(global)
+
   def storeCipher(tableName: String, er: EncryptionResult):
     Reader[AmazonDynamoDBAsync, Future[OpResult[CipherRow]]] = Reader((dynamo: AmazonDynamoDBAsync) =>  {
     val cipherRow = CipherRow(er.rowId, er.encryptedData, er.dataKey, utcNowEpochMillis)

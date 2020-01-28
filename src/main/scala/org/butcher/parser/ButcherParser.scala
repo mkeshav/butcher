@@ -1,4 +1,4 @@
-package org.butcher.internals.parser
+package org.butcher.parser
 
 import fastparse.SingleLineWhitespace._
 import fastparse._
@@ -11,7 +11,7 @@ sealed trait EncryptColumnsExpr extends Expr {
 final case class UnknownExpr() extends Expr
 final case class EncryptColumnsWithPKExpression(encryptColumns: Seq[String], keyId: String, pkColumns: Seq[String]) extends Expr
 
-private[butcher] object ButcherParser {
+object ButcherParser {
   private def Newline[_: P] = P( NoTrace(StringIn("\r\n", "\n")) )
   private def tokenParser[_: P]: P[String] = P( CharIn("A-Za-z0-9_\\-").rep(1).!.map(_.mkString) )
   private def commaSeparatedTokensParser[_: P]: P[Seq[String]] = P(tokenParser.!.rep(min = 1, sep = ","))

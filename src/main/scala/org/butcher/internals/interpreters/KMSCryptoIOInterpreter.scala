@@ -1,12 +1,12 @@
-package org.butcher.interpreters
+package org.butcher.internals.interpreters
 
 import cats.effect.IO
 import com.amazonaws.services.kms.AWSKMS
 import javax.crypto.spec.SecretKeySpec
 import org.butcher.OpResult
 import org.butcher.algebra.{CryptoDsl, DataKey}
-import org.butcher.internals.kms.KMSService
-import org.butcher.internals.kms.KMSService.{encryptWith, generateDataKey, decryptData}
+import org.butcher.internals.KMSService
+import org.butcher.internals.KMSService.{decryptData, encryptWith, generateDataKey}
 
 private[butcher] class KMSCryptoIOInterpreter(kms: AWSKMS) extends CryptoDsl[IO] {
   override def generateKey(keyId: String): IO[OpResult[DataKey]] = IO(generateDataKey(keyId).run(kms))
