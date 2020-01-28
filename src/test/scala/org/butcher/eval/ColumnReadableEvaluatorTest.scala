@@ -12,12 +12,13 @@ import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.implicits._
 import org.butcher.internals.interpreters.DynamoStorageIOInterpreter
 import org.butcher.parser.ButcherParser.block
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.test.dynamo.createTable
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ColumnReadableEvaluatorTest extends FunSuite with Matchers {
+class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndAfterAll {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
   val awsCredentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials("", ""))
   val db = AmazonDynamoDBAsyncClientBuilder.standard()
@@ -91,5 +92,19 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers {
     } catch {
       case _: Throwable => fail()
     }
+  }
+
+  override protected def beforeAll(): Unit = {
+    super.beforeAll()
+    try {
+      createTable("test", db)
+    } catch {
+      case e: Throwable => e.printStackTrace(System.err)
+    }
+  }
+
+  override protected def afterAll(): Unit = {
+    db.shutdown()
+    super.afterAll()
   }
 }
