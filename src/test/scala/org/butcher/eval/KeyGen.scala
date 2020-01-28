@@ -1,15 +1,13 @@
 package org.butcher.eval
 
 import cats.effect.IO
-import javax.crypto.{Cipher, KeyGenerator}
+import cats.syntax.either._
 import javax.crypto.spec.SecretKeySpec
+import javax.crypto.{Cipher, KeyGenerator}
 import org.apache.commons.codec.binary.Base64
 import org.butcher.OpResult
 import org.butcher.algebra.CryptoDsl.TaglessCrypto
-import cats.syntax.either._
-import com.sun.org.apache.xml.internal.security.algorithms.JCEMapper.Algorithm
-import org.butcher.algebra.StorageDsl.TaglessStorage
-import org.butcher.algebra.{CipherRow, CryptoDsl, DataKey, EncryptionResult, StorageDsl}
+import org.butcher.algebra.{CryptoDsl, DataKey}
 
 object KeyGen {
   private def genKey(algorithm: String, size: Int): Array[Byte] = {

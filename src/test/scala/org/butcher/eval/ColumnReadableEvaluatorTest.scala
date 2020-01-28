@@ -3,9 +3,6 @@ package org.butcher.eval
 import cats.data.EitherT
 import cats.effect.{ContextShift, IO}
 import cats.implicits._
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
 import org.butcher.algebra.DataKey

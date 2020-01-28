@@ -3,13 +3,13 @@ package org.butcher.internals.interpreters
 import java.nio.ByteBuffer
 
 import cats.data.EitherT
+import cats.effect.IO
 import com.amazonaws.services.kms.AWSKMS
 import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyRequest, GenerateDataKeyResult}
 import com.amazonaws.util.Base64
 import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Matchers}
-import cats.effect.IO
 
 class KMSCryptoIOInterpreterTest extends FunSuite with Matchers with MockFactory{
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="

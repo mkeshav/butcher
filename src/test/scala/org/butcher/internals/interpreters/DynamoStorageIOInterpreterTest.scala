@@ -5,7 +5,6 @@ import java.util.UUID
 import cats.effect.IO
 import org.butcher.algebra.EncryptionResult
 import org.butcher.algebra.StorageDsl.TaglessStorage
-import org.butcher.internals.DynamoService.{deleteCipherRow, getCipherRow, storeCipher}
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
 import org.test.dynamo.{createClient, createTable}
 

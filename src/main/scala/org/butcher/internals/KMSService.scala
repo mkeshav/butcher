@@ -3,6 +3,7 @@ package org.butcher.internals
 import java.nio.ByteBuffer
 
 import cats.data.Reader
+import cats.implicits._
 import com.amazonaws.services.kms.AWSKMS
 import com.amazonaws.services.kms.model.{DataKeySpec, DecryptRequest, GenerateDataKeyRequest}
 import com.amazonaws.util.Base64
@@ -10,7 +11,6 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import org.butcher.OpResult
 import org.butcher.algebra.DataKey
-import cats.implicits._
 
 private[internals] object KMSService {
   def encryptWith(data: String, dk: DataKey): OpResult[String] = {

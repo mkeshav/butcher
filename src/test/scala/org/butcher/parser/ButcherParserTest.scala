@@ -1,8 +1,8 @@
 package org.butcher.parser
 
-import org.scalatest.{Matchers, PropSpec}
-import ButcherParser._
+import org.butcher.parser.ButcherParser._
 import org.scalatest.prop.PropertyChecks
+import org.scalatest.{Matchers, PropSpec}
 
 import scala.util.Random
 

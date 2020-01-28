@@ -1,10 +1,10 @@
 package org.butcher.eval
 
+import cats.effect.IO
 import fastparse.Parsed
-import org.butcher.{ColumnReadable, OpResult}
 import org.butcher.algebra.DataKey
 import org.butcher.parser.Expr
-import cats.effect.IO
+import org.butcher.{ColumnReadable, OpResult}
 
 final case class EvalResult(row: String, encryptedContentId: String)
 trait Evaluator {
