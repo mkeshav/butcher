@@ -21,6 +21,16 @@ jobs:
       - checkout
       - setup_remote_docker
 
+      - run:
+          name: Waiting for DynamoDB to start
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 8000 && echo Success && exit 0
+              echo -n .
+              sleep 2
+            done
+            echo Failed waiting for DynamoDB && exit 1
       # Download and cache dependencies
       - restore_cache:
           keys:
