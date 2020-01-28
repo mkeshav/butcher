@@ -4,10 +4,12 @@ import java.nio.ByteBuffer
 
 import cats.data.EitherT
 import com.amazonaws.services.kms.AWSKMS
-import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyResult}
+import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyRequest, GenerateDataKeyResult}
 import com.amazonaws.util.Base64
+import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Matchers}
+import cats.effect.IO
 
 class KMSCryptoIOInterpreterTest extends FunSuite with Matchers with MockFactory{
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
@@ -24,11 +26,12 @@ class KMSCryptoIOInterpreterTest extends FunSuite with Matchers with MockFactory
     (kms.decrypt _).when(*).returns(decryptResult)
 
     val interpreter = new KMSCryptoIOInterpreter(kms)
+    val tl = new TaglessCrypto[IO](interpreter)
     val f = for {
-      dk <- EitherT(interpreter.generateKey("foo"))
-      ed <- EitherT(interpreter.encrypt("foo", dk))
-      ss <- EitherT(interpreter.decryptKey(dk.cipher))
-      dd <- EitherT(interpreter.decrypt(ss, ed))
+      dk <- EitherT(tl.generateKey("foo"))
+      ed <- EitherT(tl.encrypt("foo", dk))
+      ss <- EitherT(tl.decryptKey(dk.cipher))
+      dd <- EitherT(tl.decrypt(ss, ed))
     } yield (ed, dd)
 
 
@@ -38,6 +41,18 @@ class KMSCryptoIOInterpreterTest extends FunSuite with Matchers with MockFactory
         v._2 should be("foo")
     })
 
+  }
+
+  test("encrypt exception") {
+    val kms = stub[AWSKMS]
+    (kms.generateDataKey _).when(_:GenerateDataKeyRequest).throwing(new Throwable("Say permission error"))
+    val interpreter = new KMSCryptoIOInterpreter(kms)
+    val tl = new TaglessCrypto[IO](interpreter)
+
+    val f = for {
+      dk <- tl.generateKey("foo")
+    } yield dk
+    f.unsafeRunSync.isLeft should be(true)
   }
 
 }
