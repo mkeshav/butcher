@@ -49,7 +49,7 @@ class ColumnReadableEvaluator(dsl: TaglessCrypto[IO],
 
   private def doWork(expr: Expr, key: DataKey, row: ColumnReadable): IO[OpResult[(String, List[(String, String)])]] = {
     expr match {
-      case EncryptColumnsWithPKExpression(encryptColumns, keyId, pkColumns) =>
+      case EncryptColumnsWithPKExpression(encryptColumns, _, pkColumns) =>
         val f = for {
           sensitive <- EitherT(IO.pure(extract(row, encryptColumns)))
           id <- EitherT(IO.pure(generateUniqueId(row, pkColumns)))

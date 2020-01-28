@@ -8,6 +8,7 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import org.butcher.algebra.DataKey
 import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.implicits._
 import org.butcher.internals.interpreters.DynamoStorageIOInterpreter
@@ -33,6 +34,19 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
        |with primary key columns [firstName]
        |""".stripMargin
 
+  lazy val expression = fastparse.parse(spec.trim, block(_))
+
+  test("missing columns") {
+    val dk = DataKey("foo".getBytes, "bar", "AES")
+    val data = Map[String, String](
+      "firstName" -> "satan", "donothing" -> "1"
+    )
+
+    evaluator.eval(expression, dk, data).unsafeRunSync.fold(
+      {t => t should be("Column driversLicence not found")},
+      {_ => false should be(true)})
+  }
+
   test("awesomeness") {
     val data = Map[String, String](
       "firstName" -> "satan", "driversLicence" -> "666", "donothing" -> "1"
@@ -40,10 +54,9 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
     val expected = Right(EvalResult(
       "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|c7e616822f366fb1b5e0756af498cc11d2c0862edcb32ca65882f622ff39de1b|1",
       "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"))
-    val parsed = fastparse.parse(spec.trim, block(_))
     val f = for {
       dk <- EitherT(c.generateKey("foo"))
-      r <- EitherT(evaluator.eval(parsed, dk, data))
+      r <- EitherT(evaluator.eval(expression, dk, data))
     } yield r
 
     val result = f.value.unsafeRunSync
@@ -71,7 +84,6 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
     val mapper = new CsvMapper()
     try {
       val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
-      val expression = fastparse.parse(spec.trim, block(_))
       val result = mi.readAll().asScala.map(_.asScala.toMap).map {
         m =>
           val f = for {
