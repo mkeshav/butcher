@@ -10,7 +10,6 @@ trait StorageDsl[F[_]] {
   def put(er: EncryptionResult): F[OpResult[CipherRow]]
   def get(rowId: String): F[OpResult[CipherRow]]
   def remove(rowId: String): F[OpResult[Int]]
-  def update(rowId: String, encryptedData: String): F[OpResult[CipherRow]]
 }
 
 object StorageDsl {
@@ -18,6 +17,5 @@ object StorageDsl {
     def put(er: EncryptionResult): F[OpResult[CipherRow]] = dsl.put(er)
     def get(rowId: String): F[OpResult[CipherRow]] = dsl.get(rowId)
     def remove(rowId: String): F[OpResult[Int]] = dsl.remove(rowId)
-    def update(rowId: String, encryptedData: String): F[OpResult[CipherRow]] = dsl.update(rowId, encryptedData)
   }
 }

@@ -41,18 +41,7 @@ private[internals] object DynamoService {
         v.leftMap(e => e.toString)
     }
   })
-
-  def updateCipherRow(tableName: String, rowId: String, data: String):
-    Reader[AmazonDynamoDBAsync, Future[OpResult[CipherRow]]] = Reader((dynamo: AmazonDynamoDBAsync) =>  {
-    val ts = utcNowEpochMillis
-    val t = Table[CipherRow](tableName)
-    val ops = for {
-      cr <- t.update('rowId -> rowId, set('data -> data) and set('ts -> ts))
-    } yield cr
-
-    ScanamoAsync.exec(dynamo)(ops).map(_.leftMap(de => de.toString))
-  })
-
+  
   def deleteCipherRow(tableName: String, rowId: String):
   Reader[AmazonDynamoDBAsync, Future[OpResult[Int]]] = Reader((dynamo: AmazonDynamoDBAsync) =>  {
     val t = Table[CipherRow](tableName)

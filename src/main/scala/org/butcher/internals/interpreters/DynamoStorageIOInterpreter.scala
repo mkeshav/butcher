@@ -22,8 +22,4 @@ private[butcher] class DynamoStorageIOInterpreter(tableName: String, db: AmazonD
   override def remove(rowId: String): IO[OpResult[Int]] = {
     IO.fromFuture(IO(DynamoService.deleteCipherRow(tableName, rowId).run(db)))
   }
-
-  override def update(rowId: String, encryptedData: String): IO[OpResult[CipherRow]] = {
-    IO.fromFuture(IO(DynamoService.updateCipherRow(tableName, rowId, encryptedData).run(db)))
-  }
 }
