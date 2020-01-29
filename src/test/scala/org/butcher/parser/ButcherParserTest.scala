@@ -13,13 +13,13 @@ class ButcherParserTest extends PropSpec with PropertyChecks with Matchers {
 
     val ml =
       s"""
-         |encrypt columns [ ${lc2.mkString(", ")}] using key foo
+         |encrypt columns [ ${lc2.mkString(", ")}]
          |with primary key columns [${lc1.mkString(",")} ]
          |""".stripMargin
     val data =
       Table(
         ("input", "result"),
-        (ml, EncryptColumnsWithPKExpression(lc2, "foo", lc1)),
+        (ml, EncryptColumnsWithPKExpression(lc2, lc1)),
       )
 
     forAll(data) { (i: String, expected: Expr) =>

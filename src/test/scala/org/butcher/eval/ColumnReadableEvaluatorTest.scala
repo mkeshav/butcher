@@ -5,6 +5,7 @@ import cats.effect.{ContextShift, IO}
 import cats.implicits._
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import org.apache.commons.codec.binary.Base64
 import org.butcher.OpResult
 import org.butcher.algebra.DataKey
 import org.butcher.algebra.StorageDsl.TaglessStorage
@@ -29,11 +30,13 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
   val evaluator = new ColumnReadableEvaluator(c, storage)
   val spec =
     s"""
-       |encrypt columns [firstName, driversLicence] using key foo
+       |encrypt columns [firstName, driversLicence]
        |with primary key columns [firstName]
        |""".stripMargin
 
   lazy val expression = fastparse.parse(spec.trim, block(_))
+  val ptk = KeyGen.genKey("AES", 256)
+  val dk = DataKey(ptk, Base64.encodeBase64String(ptk), "AES")
 
   test("missing columns") {
     val dk = DataKey("foo".getBytes, "bar", "AES")
@@ -53,12 +56,8 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
     val expected = Right(EvalResult(
       "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48|c7e616822f366fb1b5e0756af498cc11d2c0862edcb32ca65882f622ff39de1b|1",
       "3815914799634fbdadf211431b8e372390fa35c0d54ed510993adb5b61525f48"))
-    val f = for {
-      dk <- EitherT(c.generateKey("foo"))
-      r <- EitherT(evaluator.eval(expression, dk, data))
-    } yield r
 
-    val result = f.value.unsafeRunSync
+    val result = evaluator.eval(expression, dk, data).unsafeRunSync
     result.isRight should be(true)
     result should be(expected)
 
@@ -82,16 +81,13 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
     val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(',')
     val mapper = new CsvMapper()
     try {
-      val dk = c.generateKey("foo").unsafeRunSync
-      val result = dk.flatMap {
-        k =>
-          val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
-          val l: mutable.Seq[IO[OpResult[EvalResult]]] = mi.readAll().asScala.map(_.asScala.toMap).map {
-            m =>
-              evaluator.eval(expression, k, m)
-          }
-          l.toList.sequence.map(_.sequence).unsafeRunSync
+      val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
+      val l: mutable.Seq[IO[OpResult[EvalResult]]] = mi.readAll().asScala.map(_.asScala.toMap).map {
+        m =>
+          evaluator.eval(expression, dk, m)
       }
+      val result = l.toList.sequence.map(_.sequence).unsafeRunSync
+
       result should be(Right(expected))
 
     } catch {

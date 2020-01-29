@@ -6,11 +6,9 @@ import javax.crypto.spec.SecretKeySpec
 import org.butcher.OpResult
 import org.butcher.algebra.{CryptoDsl, DataKey}
 import org.butcher.internals.KMSService
-import org.butcher.internals.KMSService.{decryptData, encryptWith, generateDataKey}
+import org.butcher.internals.KMSService.{decryptData, encryptWith}
 
 private[butcher] class KMSCryptoIOInterpreter(kms: AWSKMS) extends CryptoDsl[IO] {
-  override def generateKey(keyId: String): IO[OpResult[DataKey]] = IO(generateDataKey(keyId).run(kms))
-
   override def encrypt(data: String, dk: DataKey): IO[OpResult[String]] = IO(encryptWith(data, dk))
 
   override def decryptKey(cipher: String): IO[OpResult[SecretKeySpec]] = IO(KMSService.decryptKey(cipher).run(kms))

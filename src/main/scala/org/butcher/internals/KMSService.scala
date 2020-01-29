@@ -21,18 +21,6 @@ private[internals] object KMSService {
     }
   }
 
-  def generateDataKey(keyId: String, algorithm: String = "AES"): Reader[AWSKMS, OpResult[DataKey]] = Reader((kms: AWSKMS) => {
-    val gd = new GenerateDataKeyRequest().withKeyId(keyId).withKeySpec(DataKeySpec.AES_256)
-    try {
-      val gdkr = kms.generateDataKey(gd)
-      val ptk = gdkr.getPlaintext.array()
-      val cipherBlob = new String(Base64.encode(gdkr.getCiphertextBlob.array()))
-      DataKey(ptk, cipherBlob, algorithm).asRight
-    } catch {
-      case e: Throwable => e.getMessage.asLeft
-    }
-  })
-
   def decryptKey(base64EncodedCipher: String, algorithm: String = "AES"): Reader[AWSKMS, OpResult[SecretKeySpec]] = Reader((kms: AWSKMS) => {
     try {
       val dkr = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(Base64.decode(base64EncodedCipher)))
