@@ -5,6 +5,7 @@ import cats.effect.{ContextShift, IO}
 import cats.implicits._
 import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.dataformat.csv.{CsvMapper, CsvSchema}
+import org.butcher.OpResult
 import org.butcher.algebra.DataKey
 import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.implicits._
@@ -14,6 +15,7 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
 import org.test.dynamo._
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndAfterAll {
@@ -80,20 +82,20 @@ class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndA
     val bootstrapSchema = CsvSchema.emptySchema().withHeader().withColumnSeparator(',')
     val mapper = new CsvMapper()
     try {
-      val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
-      val result = mi.readAll().asScala.map(_.asScala.toMap).map {
-        m =>
-          val f = for {
-            dk <- EitherT(c.generateKey("foo"))
-            r <- EitherT(evaluator.eval(expression, dk, m))
-          } yield r
-
-          f.value
+      val dk = c.generateKey("foo").unsafeRunSync
+      val result = dk.flatMap {
+        k =>
+          val mi: MappingIterator[java.util.Map[String, String]] = mapper.readerFor(classOf[java.util.Map[String, String]]).`with`(bootstrapSchema).readValues(data.trim)
+          val l: mutable.Seq[IO[OpResult[EvalResult]]] = mi.readAll().asScala.map(_.asScala.toMap).map {
+            m =>
+              evaluator.eval(expression, k, m)
+          }
+          l.toList.sequence.map(_.sequence).unsafeRunSync
       }
-      val seqd = result.toList.sequence.map(_.sequence)
-      seqd.unsafeRunSync should be(Right(expected))
+      result should be(Right(expected))
+
     } catch {
-      case _: Throwable => fail()
+      case t: Throwable => println(t);fail()
     }
   }
 
