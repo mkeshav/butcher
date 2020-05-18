@@ -30,10 +30,11 @@ libraryDependencies ++= Seq(
   "com.gu" %% "scanamo" % "1.0.0-M8",
 
   //java
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1",
   "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.711",
   "com.amazonaws" % "aws-java-sdk-kms" % "1.11.691",
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test,
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1" % Test,
+  "io.circe" %% "circe-yaml" % "0.10.0" % Test,
 )
