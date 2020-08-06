@@ -5,10 +5,12 @@ import java.util.UUID
 import cats.effect.IO
 import org.butcher.algebra.EncryptionResult
 import org.butcher.algebra.StorageDsl.TaglessStorage
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.test.dynamo.{createClient, createTable}
 
-class DynamoStorageIOInterpreterTest extends FunSuite with Matchers with BeforeAndAfterAll {
+class DynamoStorageIOInterpreterTest extends AnyFunSuite with Matchers with BeforeAndAfterAll {
   val endpoint = sys.env.getOrElse("DYNAMO_ENDPOINT", "http://localhost:8000")
   val db = createClient(endpoint)
 

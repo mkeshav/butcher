@@ -1,15 +1,17 @@
 package org.butcher.eval
 
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.scalatest.{BeforeAndAfterAll}
 import io.circe._
 import io.circe.generic.auto._
 import cats.syntax.either._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 case class Column(name: String, functions: List[String])
 case class File(name: String, columns: List[Column])
 case class Spec(files: List[File])
 case class YamlParsed(spec: Spec)
-class YamlTest extends FunSuite with Matchers with BeforeAndAfterAll {
+class YamlTest extends AnyFunSuite with Matchers with BeforeAndAfterAll {
   test("something") {
     val yaml =
       """

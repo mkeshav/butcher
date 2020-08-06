@@ -19,7 +19,7 @@ ThisBuild / githubTokenSource := Some(TokenSource.Environment("GITHUB_TOKEN"))
 ThisBuild / githubUser := "mkeshav@gmail.com"
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" %% "fastparse" % "2.1.3",
+  "com.lihaoyi" %% "fastparse" % "2.2.2",
   "org.typelevel" %% "cats-core" % "2.0.0",
   "org.typelevel" %% "cats-effect" % "2.0.0",
   "io.circe" %% "circe-core"% circeVersion,
@@ -32,8 +32,9 @@ libraryDependencies ++= Seq(
   //java
   "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.711",
   "com.amazonaws" % "aws-java-sdk-kms" % "1.11.691",
-  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
+  "org.scalactic" %% "scalactic" % "3.2.0",
+  "org.scalatest" %% "scalatest" % "3.2.0" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.14.1" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test,
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % "2.10.1" % Test,
   "io.circe" %% "circe-yaml" % "0.10.0" % Test,

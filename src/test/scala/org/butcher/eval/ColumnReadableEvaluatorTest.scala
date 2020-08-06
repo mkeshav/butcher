@@ -12,14 +12,16 @@ import org.butcher.algebra.StorageDsl.TaglessStorage
 import org.butcher.implicits._
 import org.butcher.internals.interpreters.DynamoStorageIOInterpreter
 import org.butcher.parser.ButcherParser.block
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.test.dynamo._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ColumnReadableEvaluatorTest extends FunSuite with Matchers with BeforeAndAfterAll {
+class ColumnReadableEvaluatorTest extends AnyFunSuite with Matchers with BeforeAndAfterAll {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
   val endpoint = sys.env.getOrElse("DYNAMO_ENDPOINT", "http://localhost:8000")
   val db = createClient(endpoint)

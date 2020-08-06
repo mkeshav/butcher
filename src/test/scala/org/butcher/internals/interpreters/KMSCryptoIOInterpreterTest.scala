@@ -5,14 +5,15 @@ import java.nio.ByteBuffer
 import cats.data.EitherT
 import cats.effect.IO
 import com.amazonaws.services.kms.AWSKMS
-import com.amazonaws.services.kms.model.{DecryptResult, GenerateDataKeyRequest, GenerateDataKeyResult}
+import com.amazonaws.services.kms.model.DecryptResult
 import com.amazonaws.util.Base64
 import org.butcher.algebra.CryptoDsl.TaglessCrypto
 import org.butcher.algebra.DataKey
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class KMSCryptoIOInterpreterTest extends FunSuite with Matchers with MockFactory{
+class KMSCryptoIOInterpreterTest extends AnyFunSuite with Matchers with MockFactory {
   val b64EncodedPlainTextKey = "acZLXO+SWyeV95LYvUMExQtGeDHExNkAjvXbpbUEMK0="
   val b64EncodedCipherTextBlob = "AQIDAHhoNt+QMcK2fLVptebsdn939rqRYSkfDPtL70lK0fvadAGctDSWR9FFQo/sjJINvabqAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXCvv+D0JW3bZA6hAgEQgDvx1mHmiC1xdu4IDLY38QmgcVJf3vxxrM/v5I9OFL/kls9DkP1fhZI1GJtiJ3nQaEsYjO5oBSmsRdNEpA=="
 

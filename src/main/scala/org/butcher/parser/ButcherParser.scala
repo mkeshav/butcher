@@ -22,7 +22,7 @@ object ButcherParser {
   }
 
 
-  def file[_: P]: P[Prg] = P(IgnoreCase("file") ~ fileNameParser ~ "{" ~ newline.rep(min = 1) ~ block.rep(min = 1) ~ newline.rep(min = 1) ~ "}").map {
+  def file[_: P]: P[Prg] = P(IgnoreCase("file") ~ fileNameParser ~ "{" ~ newline.rep(1) ~ block.rep(1) ~ newline.rep(1) ~ "}").map {
     case (filePath, expressions) => Prg(filePath, expressions)
   }
 }
