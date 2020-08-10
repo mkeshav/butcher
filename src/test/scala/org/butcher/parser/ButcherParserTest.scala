@@ -1,14 +1,14 @@
 package org.butcher.parser
 
 import org.butcher.parser.ButcherParser._
+import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.propspec.AnyPropSpec
 
 import scala.util.Random
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
-class ButcherParserTest extends AnyPropSpec with Matchers {
-  property("multiline") {
+class ButcherParserTest extends AnyFunSuite with Matchers {
+  test("multiline") {
     val lc1 = (1 to 10).map(_ => Random.alphanumeric.take(16).mkString)
     val lc2 = (1 to 10).map(_ => Random.alphanumeric.take(16).mkString)
 
@@ -32,8 +32,7 @@ class ButcherParserTest extends AnyPropSpec with Matchers {
     }
   }
 
-
-  property("file") {
+  test("file") {
     val lc1 = (1 to 10).map(_ => Random.alphanumeric.take(16).mkString)
     val lc2 = (1 to 10).map(_ => Random.alphanumeric.take(16).mkString)
 
